@@ -1,0 +1,84 @@
+{
+  "sources": {
+    "OpenVoice": {
+      "repository": "https://github.com/myshell-ai/OpenVoice",
+      "commit": "74a1d147b17a8c3092dd5430504bd83ef6c7eb23"
+    },
+    "LavaSR": {
+      "repository": "https://github.com/ysharma3501/LavaSR",
+      "commit": "33ac040892519c1bb4aed7eb32e79af51cc29e2a"
+    },
+    "vocos": {
+      "repository": "https://github.com/langtech-bsc/vocos",
+      "commit": "451e522f7a11c3652c9522f63ea6780736d93de0"
+    }
+  },
+  "files": [
+    {
+      "model": "openvoice",
+      "path": "base_speakers/ses/en-au.pth",
+      "url": "https://huggingface.co/myshell-ai/OpenVoiceV2/resolve/f36e7edfe1684461a8343844af60babc2efbb727/base_speakers/ses/en-au.pth",
+      "sha256": "5e9782233deef51fc5289d05ad4dd4ce12b196e282eccf6b6db6256bbd02daaa"
+    },
+    {
+      "model": "openvoice",
+      "path": "base_speakers/ses/en-br.pth",
+      "url": "https://huggingface.co/myshell-ai/OpenVoiceV2/resolve/f36e7edfe1684461a8343844af60babc2efbb727/base_speakers/ses/en-br.pth",
+      "sha256": "2bf5a88025cfd10473b25d65d5c0e608338ce4533059c5f9a3383e69c812d389"
+    },
+    {
+      "model": "openvoice",
+      "path": "base_speakers/ses/en-default.pth",
+      "url": "https://huggingface.co/myshell-ai/OpenVoiceV2/resolve/f36e7edfe1684461a8343844af60babc2efbb727/base_speakers/ses/en-default.pth",
+      "sha256": "e4139de3bc2ea162f45a5a5f9559b710686c9689749b5ab8945ee5e2a082d154"
+    },
+    {
+      "model": "openvoice",
+      "path": "base_speakers/ses/en-india.pth",
+      "url": "https://huggingface.co/myshell-ai/OpenVoiceV2/resolve/f36e7edfe1684461a8343844af60babc2efbb727/base_speakers/ses/en-india.pth",
+      "sha256": "ad03d946757e95fe9e13239aa4b11071d98f22316f604f34b1a0b4bdf41cda48"
+    },
+    {
+      "model": "openvoice",
+      "path": "base_speakers/ses/en-newest.pth",
+      "url": "https://huggingface.co/myshell-ai/OpenVoiceV2/resolve/f36e7edfe1684461a8343844af60babc2efbb727/base_speakers/ses/en-newest.pth",
+      "sha256": "6a3798229b1114f0e9cc137b33211809def7dda5a8a9398d5a112c0b42699177"
+    },
+    {
+      "model": "openvoice",
+      "path": "base_speakers/ses/en-us.pth",
+      "url": "https://huggingface.co/myshell-ai/OpenVoiceV2/resolve/f36e7edfe1684461a8343844af60babc2efbb727/base_speakers/ses/en-us.pth",
+      "sha256": "0d092d4af0815a4bfbc6105b65621ab68dc4c61b2f55044d8a66968a34947c32"
+    },
+    {
+      "model": "openvoice",
+      "path": "converter/checkpoint.pth",
+      "url": "https://huggingface.co/myshell-ai/OpenVoiceV2/resolve/f36e7edfe1684461a8343844af60babc2efbb727/converter/checkpoint.pth",
+      "sha256": "9652c27e92b6b2a91632590ac9962ef7ae2b712e5c5b7f4c34ec55ee2b37ab9e"
+    },
+    {
+      "model": "openvoice",
+      "path": "converter/config.json",
+      "url": "https://huggingface.co/myshell-ai/OpenVoiceV2/resolve/f36e7edfe1684461a8343844af60babc2efbb727/converter/config.json",
+      "sha256": "9dfff60350b8c63f2c664efd92a61b2516efb22671466960f0e5dfebd881fa47"
+    },
+    {
+      "model": "lavasr",
+      "path": "denoiser/denoiser.bin",
+      "url": "https://huggingface.co/YatharthS/LavaSR/resolve/b98dc8be472da45ab7b6346ad7997e1dfeb5911d/denoiser/denoiser.bin",
+      "sha256": "20556014835fe3ac4a2976a844ed12fc2a3aca79f92b89a4ad9991b8de15aed9"
+    },
+    {
+      "model": "lavasr",
+      "path": "enhancer_v2/config.yaml",
+      "url": "https://huggingface.co/YatharthS/LavaSR/resolve/b98dc8be472da45ab7b6346ad7997e1dfeb5911d/enhancer_v2/config.yaml",
+      "sha256": "0d970f5cdc1913730c417b49e476bb09bb8b874583d113f71a7f10c8bb3a4b7d"
+    },
+    {
+      "model": "lavasr",
+      "path": "enhancer_v2/pytorch_model.bin",
+      "url": "https://huggingface.co/YatharthS/LavaSR/resolve/b98dc8be472da45ab7b6346ad7997e1dfeb5911d/enhancer_v2/pytorch_model.bin",
+      "sha256": "d100db961b2c125d77a52a12215c689e44cd9926a72f117513395b7e25e6de12"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+<svg viewBox="0 0 200 200" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+  <g data-state="on">
+    <g stroke="var(--accent,#ffd166)" stroke-width="8" stroke-linecap="round">
+      <path d="M100 8 V26 M32 40 L45 53 M168 40 L155 53 M14 108 H32 M186 108 H168"/>
+    </g>
+    <path d="M100 34a56 56 0 0 1 33 101v13H67v-13A56 56 0 0 1 100 34Z" fill="var(--accent,#ffd166)"/>
+  </g>
+  <g data-state="off">
+    <path d="M100 34a56 56 0 0 1 33 101v13H67v-13A56 56 0 0 1 100 34Z"
+          fill="none" stroke="currentColor" stroke-width="9"/>
+  </g>
+  <rect x="70" y="152" width="60" height="14" rx="4" fill="currentColor"/>
+  <rect x="76" y="170" width="48" height="12" rx="5" fill="currentColor"/>
+</svg>

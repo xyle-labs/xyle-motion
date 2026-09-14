@@ -1,0 +1,10 @@
+# Xyle — clean, technical, geometric (README §15). Light ground, dark ink.
+name: xyle
+
+colors:
+  background: "#ECEAE4"
+  text: "#1F1F1F"
+  primary: "#2B5F75"
+  secondary: "#8A9AA1"
+  accent: "#F45A31"
+  muted: "#C7C2B8"

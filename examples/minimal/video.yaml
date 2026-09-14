@@ -1,0 +1,20 @@
+version: 1
+video:
+  id: minimal
+  width: 640
+  height: 360
+  fps: 30
+  theme: neutral
+  music: { file: calm, volume: 0.12 }
+scenes:
+  - id: idea
+    duration: 3
+    elements:
+      - { id: title, type: text, text: "An idea, made visible.", size: 36, y: 65 }
+      - { id: bulb, type: asset, asset: household.lightbulb, state: on, width: 145, x: center, y: 205, color: accent, enter: { type: pop }, sound: { id: pop, volume: 0.3 } }
+  - id: together
+    duration: 3
+    narration: { text: "Built from reusable parts." }
+    elements:
+      - { id: title, type: text, text: "Built from reusable parts.", size: 34, y: 65 }
+      - { id: people, type: asset, asset: people.person, repeat: 3, columns: 3, width: 75, gap: 24, x: center, y: 205, color: primary, stagger: 0.15, enter: { type: pop }, sound: { id: chime, volume: 0.2 } }

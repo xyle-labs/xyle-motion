@@ -1,0 +1,52 @@
+{
+  "name": "@xyle-labs/motion",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "explainer": "node bin/explainer.ts",
+    "check": "node --test src/*.test.ts",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.522",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "remotion": "4.0.522",
+    "yaml": "2.9.0",
+    "zod": "4.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.0",
+    "@types/react": "19.2.8",
+    "typescript": "5.9.3"
+  },
+  "version": "0.1.0-dev.0",
+  "description": "Project-local explainer videos for coding agents. One CLI, one skill, editable YAML.",
+  "license": "UNLICENSED",
+  "bin": {
+    "explainer": "dist/bin/explainer.js"
+  },
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "files": [
+    "dist/",
+    "library/",
+    "themes/",
+    "studio/*.html",
+    "studio/*.css",
+    "studio/*.js",
+    "skills/xyle-motion/SKILL.md",
+    "skills/xyle-motion/references/",
+    "skills/xyle-motion/scripts/context.mjs",
+    "examples/minimal/video.yaml",
+    "docs/",
+    "NOTICE.md",
+    "remotion.config.js"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xyle-labs/motion.git"
+  }
+}

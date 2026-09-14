@@ -1,0 +1,7 @@
+<svg viewBox="0 0 200 200" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+  <path d="M42 15h121v164l-10-6-10 6-10-6-10 6-10-6-10 6-10-6-10 6-10-6-10 6-10-6-10 6V15z" fill="currentColor" opacity=".12" transform="translate(4 5)"/>
+  <path d="M39 13h122v164l-10-6-10 6-10-6-10 6-10-6-10 6-10-6-10 6-10-6-10 6-10-6-10 6V13z" fill="currentColor"/>
+  <path d="M56 40h55M56 53h88" stroke="var(--background,#0B1C2C)" stroke-width="4" stroke-linecap="round" opacity=".35"/>
+  <path d="M56 140h88" stroke="var(--background,#0B1C2C)" stroke-width="2" stroke-dasharray="3 3" opacity=".3"/>
+  <path d="M57 153v9m5-9v9m4-9v9m6-9v9m3-9v9m5-9v9m4-9v9m7-9v9m4-9v9m3-9v9m6-9v9m5-9v9m4-9v9m7-9v9m3-9v9m6-9v9m4-9v9" stroke="var(--background,#0B1C2C)" stroke-width="2" opacity=".5"/>
+</svg>

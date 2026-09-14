@@ -1,0 +1,12 @@
+<svg viewBox="0 0 200 200" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="100" cy="184" rx="84" ry="7" fill="currentColor" opacity=".12"/>
+  <path d="M140 35h20v39h-20z" fill="currentColor"/>
+  <path d="M36 92h128v85H36z" fill="currentColor"/><path d="M43 96h114v74H43z" fill="var(--background,#ECEAE4)" opacity=".13"/>
+  <path d="m16 96 84-69 84 69-11 12-73-58-73 58z" fill="currentColor"/>
+  <path d="m31 99 69-55 69 55" stroke="var(--accent,#F45A31)" stroke-width="5" fill="none"/>
+  <path d="M87 133h28v44H87z" fill="var(--accent,#F45A31)"/><circle cx="107" cy="157" r="2" fill="currentColor"/>
+  <g data-state="lights-off" fill="var(--background,#ECEAE4)" opacity=".25"><rect x="52" y="110" width="26" height="29" rx="2"/><rect x="125" y="110" width="26" height="29" rx="2"/></g>
+  <g data-state="lights-on" fill="var(--accent,#F45A31)"><rect x="52" y="110" width="26" height="29" rx="2"/><rect x="125" y="110" width="26" height="29" rx="2"/><path d="m52 143-10 26h45l-9-26zm73 0-9 26h44l-9-26z" opacity=".16"/></g>
+  <path d="M65 110v29m73-29v29m-86-15h26m47 0h26" stroke="currentColor" stroke-width="3"/>
+  <path d="M31 178h138" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+</svg>

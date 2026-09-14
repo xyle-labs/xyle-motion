@@ -1,0 +1,10 @@
+node_modules/
+dist/
+*.tgz
+.env*
+.DS_Store
+*.log
+**/output/
+**/recordings/previews/
+.local-voice/
+__pycache__/

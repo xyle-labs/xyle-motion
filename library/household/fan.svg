@@ -1,0 +1,7 @@
+<svg viewBox="0 0 200 200" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+  <path d="M93 123h14v48H93z" fill="currentColor"/>
+  <rect x="53" y="171" width="94" height="12" rx="6" fill="currentColor"/>
+  <circle cx="100" cy="77" r="58" fill="none" stroke="currentColor" stroke-width="7"/>
+  <path d="M100 77C68 58 91 13 113 34c12 12-1 31-13 43ZM100 77c32-18 61 23 32 32-16 5-26-15-32-32ZM100 77c0 37-49 41-42 12 4-16 26-15 42-12Z" fill="currentColor" opacity=".7"/>
+  <circle cx="100" cy="77" r="10" fill="var(--accent,#FFD166)"/>
+</svg>

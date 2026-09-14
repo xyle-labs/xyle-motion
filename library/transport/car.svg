@@ -1,0 +1,12 @@
+<svg viewBox="0 0 240 120" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="120" cy="111" rx="103" ry="5" fill="currentColor" opacity=".12"/>
+  <path d="M15 89V69q0-12 14-15l32-6 24-22q7-6 20-6h33q14 0 22 13l16 22 27 5q17 4 17 17v12z" fill="currentColor"/>
+  <g fill="var(--background,#ECEAE4)"><path d="m92 31-22 22h49V31zm37 0v22h36l-14-18q-3-4-11-4z"/></g>
+  <path d="m95 33-17 17h14l17-17z" fill="var(--secondary,#8A9AA1)" opacity=".45"/>
+  <path d="M28 78h178" stroke="var(--accent,#F45A31)" stroke-width="5"/>
+  <path d="M120 58v21m12-17h10" stroke="var(--background,#ECEAE4)" stroke-width="3" stroke-linecap="round" opacity=".6"/>
+  <path d="M15 65h13v9H15" fill="var(--accent,#F45A31)"/><path d="M207 66h10v9h-10z" fill="var(--background,#ECEAE4)"/>
+  <g fill="currentColor" stroke="var(--background,#ECEAE4)" stroke-width="3"><circle cx="62" cy="93" r="18"/><circle cx="177" cy="93" r="18"/></g>
+  <g fill="var(--secondary,#8A9AA1)"><circle cx="62" cy="93" r="8"/><circle cx="177" cy="93" r="8"/></g>
+  <g fill="currentColor"><circle cx="62" cy="93" r="3"/><circle cx="177" cy="93" r="3"/></g>
+</svg>

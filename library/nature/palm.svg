@@ -1,0 +1,21 @@
+<svg viewBox="0 0 200 200" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+  <g data-state="trunk">
+    <path d="M71 187C88 143 109 101 121 30L131 30C129 90 111 150 98 187Z" fill="currentColor"/>
+    <path d="M86 166l17 5m-10-24 17 5m-10-24 16 5m-9-24 15 4m-10-24 14 4m-9-23 12 3m-9-23 11 2" fill="none" stroke="var(--background,#F7F1E3)" stroke-width="2.5" opacity=".35"/>
+  </g>
+  <!-- Both frond groups attach at the canvas centre, their rotation pivot. -->
+  <g data-state="left">
+    <path d="M102 102C77 58 32 51 8 85C40 76 65 85 102 102Z" fill="currentColor"/>
+    <path d="M100 100C65 83 27 103 19 145C46 119 66 109 100 100Z" fill="currentColor"/>
+    <path d="M102 101C94 57 70 24 40 28C58 46 79 76 102 101Z" fill="currentColor"/>
+    <path d="M97 98Q55 69 19 82M94 102Q52 103 28 132M98 91Q76 52 48 34" fill="none" stroke="var(--accent,#8AAB77)" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="m35 80 3 8m17-3 3 9m-20 25 6 7m15-18 6 7m-1-65-5 8m17 9-5 8" stroke="var(--background,#F7F1E3)" stroke-width="2"/>
+  </g>
+  <g data-state="right">
+    <path d="M98 102C125 60 165 62 191 93C156 80 129 92 98 102Z" fill="currentColor"/>
+    <path d="M101 100C139 82 171 110 174 151C151 122 132 111 101 100Z" fill="currentColor"/>
+    <path d="M99 101C101 53 122 22 155 26C135 43 114 73 99 101Z" fill="currentColor"/>
+    <path d="M105 96Q145 71 181 88M108 104Q147 107 167 139M105 89Q120 47 148 30" fill="none" stroke="var(--accent,#8AAB77)" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="m153 83-4 9m21-6-4 6m-15 26-7 8m-13-23-5 7m-6-57 7 7m-17 11 7 6" stroke="var(--background,#F7F1E3)" stroke-width="2"/>
+  </g>
+</svg>

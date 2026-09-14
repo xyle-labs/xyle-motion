@@ -1,0 +1,12 @@
+<svg viewBox="0 0 240 120" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="121" cy="110" rx="109" ry="5" fill="currentColor" opacity=".12"/>
+  <path d="M12 83V25q0-14 15-14h185q16 0 16 16v62H12z" fill="currentColor"/>
+  <path d="M13 64h214v15H13z" fill="var(--accent,#F45A31)"/>
+  <g fill="var(--background,#ECEAE4)"><rect x="23" y="24" width="34" height="30" rx="4"/><rect x="64" y="24" width="34" height="30" rx="4"/><rect x="105" y="24" width="34" height="30" rx="4"/><rect x="146" y="24" width="30" height="30" rx="4"/><path d="M185 24h26q6 0 6 6v49h-32z"/></g>
+  <g fill="var(--secondary,#8A9AA1)" opacity=".45"><path d="m25 26 16 0-16 23zm42 0h16L67 49zm41 0h16l-16 23zm41 0h16l-16 23z"/></g>
+  <path d="M201 25v54M185 57h32" stroke="currentColor" stroke-width="3"/>
+  <rect x="17" y="80" width="12" height="5" rx="2" fill="var(--accent,#F45A31)"/><rect x="216" y="62" width="8" height="8" rx="2" fill="var(--background,#ECEAE4)"/>
+  <g fill="currentColor" stroke="var(--background,#ECEAE4)" stroke-width="3"><circle cx="57" cy="93" r="17"/><circle cx="174" cy="93" r="17"/></g>
+  <g fill="var(--secondary,#8A9AA1)"><circle cx="57" cy="93" r="8"/><circle cx="174" cy="93" r="8"/></g>
+  <g fill="currentColor"><circle cx="57" cy="93" r="3"/><circle cx="174" cy="93" r="3"/></g>
+</svg>

@@ -1,0 +1,29 @@
+# Development status — 14 September 2026
+
+Xyle Motion: package `@xyle-labs/motion`, command `explainer`, skill `$xyle-motion`.
+The repository and npm package remain private pending public release review.
+
+Implemented: compiled npm package; explicit external video directories; bundled
+SVG/theme/audio resolution; isolated renderer/browser caches; portable basic
+recording studio; scene inspection; neutral example; self-contained skill.
+The existing deterministic renderer and scene cache are retained.
+
+Validation: 51 logic and recording checks, plus the skill context check. The
+packed-package smoke test installs into an unrelated directory with spaces and
+an apostrophe, ignores a deliberately failing host Remotion config, renders
+frames/a sheet/a six-second MP4, checks unchanged/one-scene/music-only cache
+behavior, exercises gentle and RNNoise cleanup, and verifies the installed
+package is unchanged. The browser's initial download was also exercised.
+A contact sheet was visually inspected; MP4 streams and duration were probed.
+Full human listening/playback review remains outstanding.
+
+Next: project asset/theme roots and workspace creation defaults; the client project pilot;
+optional local model-cache portability; Linux CI; final source/media licensing
+and publication review. Optional neural speaker conversion is deliberately
+unavailable in this build; existing local cleanup and native recording remain.
+The current artwork is suitable for engine validation, not a finished brand kit.
+
+Extraction used the current working toolkit files, including uncommitted work,
+rather than exporting its older HEAD alone. Client projects, recordings,
+identity logos, credentials, model weights and old Git history were excluded.
+The original repository and its videos were not modified during extraction.

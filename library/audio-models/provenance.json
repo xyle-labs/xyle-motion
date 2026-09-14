@@ -1,0 +1,8 @@
+{
+  "source": "https://raw.githubusercontent.com/richardpl/arnndn-models/0fda24c46d78f0207d820bb970fbe85c1971b39c/cb.rnnn",
+  "sha256": "f1357c4e5be9dee8467bead486dfced2d75b640c26ad0b594fa7f102322371d9",
+  "author": "Gregor Richards",
+  "model": "conjoined-burgers",
+  "upstream": "https://github.com/GregorR/rnnoise-models",
+  "licenseStatement": "https://github.com/GregorR/rnnoise-models/blob/master/README.md"
+}
