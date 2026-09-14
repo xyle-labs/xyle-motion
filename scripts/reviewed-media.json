@@ -1,0 +1,20 @@
+{
+  "library/music/calm.wav": "8ab84fbbb0d41935cfabe751324e692951b3e59561cf6e37eb25effb52fbc8b9",
+  "library/music/clean.wav": "d9f54c2d4266dd93e73fb11f3a37af5e71bb5d18848fc7fb47a9219dbd327220",
+  "library/music/curious.wav": "88b51c65953e3f7dffd94b8c81cd000f85cfc2a4527e6495bde748042f19c414",
+  "library/music/daybreak.wav": "d92e80c936b1447e03e178b06a3f952e089e4273f7a3260be978a6a0c09294fc",
+  "library/music/momentum.wav": "f09fc5892e846f3e673586af1ea134a0fe6d2b848bfd1d6e05c0b2fb0e87a162",
+  "library/sounds/chime.wav": "a5b29fbbaa21948879b98c6eee0dc9a010d12274074441c58691cd2ddd93e1e9",
+  "library/sounds/click.wav": "622c70a78e7ce432217617123f2d9df571ee17bce37669752ae333b4b8d60bff",
+  "library/sounds/coconut-crack.wav": "2309b86021d4c0b95414be72737e296015aea5e0d303b42a5db21c114f7def34",
+  "library/sounds/palm-rustle.wav": "489f20a3386c602b6db658991c265749c8fd5a3351083f95961bc0ea2861224d",
+  "library/sounds/paper-turn.wav": "63f5f476056bdec9588edac07610926f189bfc7f1f9cabcaa348d23510212d23",
+  "library/sounds/pop.wav": "29ed363960716f9dc2dc75e4821dd3140b5dcb9f74702170ef8512092a09f996",
+  "library/sounds/shell-tick.wav": "b3848f87aa141346dc445a1367e2ab3236312bdbd2c7bb8646a7e9b2c146a2cb",
+  "library/sounds/signature.wav": "5439b6728028bf16a88ce7aa167adc5f731f6afe8c38d24cf75347c470cc2156",
+  "library/sounds/soft-land.wav": "e236ccb5f4730189d46bd75aebcbcab8604fc67cf000a28b995431d7fbcefdaf",
+  "library/sounds/sparkle.wav": "b299590bddb8169e9db994859892a4fec61556697d6ad677dfef5bdb834068df",
+  "library/sounds/thunk.wav": "8266cfbc273be3f5ef9500f3665c790df5944dadb5edd7718248b037e6332ef7",
+  "library/sounds/whoosh.wav": "3666f8367d6d22d7542fcde232847d0784fc335561776b66d5d217e920201013",
+  "library/sounds/wood-tap.wav": "a497fba78d9bde4fa6e56b293d67568f04d195f6c0ffd48fe3c730e9536829eb"
+}

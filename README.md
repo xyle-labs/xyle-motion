@@ -80,6 +80,10 @@ public redistribution review is pending. See [NOTICE.md](NOTICE.md).
 
 ## Development
 
+Run `npm run security:setup` after cloning to install the commit/push checks and
+set this repository's neutral Git identity. See [SECURITY.md](SECURITY.md) for
+coverage, media review and remote protection requirements.
+
 ```sh
 npm run check
 npm run build

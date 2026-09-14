@@ -1,0 +1,22 @@
+title = "Xyle Motion secret and privacy checks"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "personal-home-path"
+description = "Use portable paths instead of personal home directories"
+regex = '''(?:/(?:Users|home)/[A-Za-z0-9_.-]+|[A-Za-z]:\\Users\\[A-Za-z0-9_.-]+)'''
+
+[[rules]]
+id = "personal-email"
+description = "Keep personal email addresses out of source and messages"
+regex = '''[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}'''
+[[rules.allowlists]]
+regexTarget = "match"
+regexes = ['''(?i)^[A-Za-z0-9._%+-]+@(?:example\.(?:com|org|net|invalid)|users\.noreply\.github\.com)$''']
+
+[[rules]]
+id = "chat-export"
+description = "Raw assistant conversation exports do not belong in this repository"
+regex = '''["']role["']\s*:\s*["'](?:user|assistant|system)["']'''

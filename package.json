@@ -5,7 +5,9 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "explainer": "node bin/explainer.ts",
-    "check": "node --test src/*.test.ts",
+    "check": "node --test src/*.test.ts scripts/security.test.mjs",
+    "security:setup": "node scripts/security.mjs setup",
+    "security:check": "node scripts/security.mjs history",
     "prepack": "npm run build"
   },
   "dependencies": {
@@ -43,6 +45,7 @@
     "examples/minimal/video.yaml",
     "docs/",
     "NOTICE.md",
+    "SECURITY.md",
     "remotion.config.js"
   ],
   "repository": {
