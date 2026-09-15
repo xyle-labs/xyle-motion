@@ -11,7 +11,7 @@ renderer/browser caches; portable basic recording studio; scene inspection;
 neutral example; self-contained skill.
 The existing deterministic renderer and scene cache are retained.
 
-Validation: 56 logic and recording checks, plus the skill context check. The
+Validation: 59 logic and recording checks, plus the skill context check. The
 packed-package smoke test installs into an unrelated directory with spaces and
 an apostrophe, ignores a deliberately failing host Remotion config, renders
 frames/a sheet/a six-second MP4, checks unchanged/one-scene/music-only cache
@@ -23,9 +23,9 @@ A contact sheet was visually inspected; MP4 streams and duration were probed.
 Full human listening/playback review remains outstanding.
 
 Next: shared project asset/theme roots and workspace creation defaults; the client project pilot;
-optional local model-cache portability; Linux CI; optional model licensing
-and publication review. Optional neural speaker conversion is deliberately
-unavailable in this build; existing local cleanup and native recording remain.
+Linux render CI and publication review. Experimental neural tooling and its
+Python dependency pins are retired; existing local cleanup and native recording
+remain. Scene IDs are validated before they can become export/cache filenames.
 The current artwork is suitable for engine validation, not a finished brand kit.
 
 Extraction used the current working toolkit files, including uncommitted work,

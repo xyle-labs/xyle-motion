@@ -129,42 +129,21 @@ export type LocalSpeaker = typeof LOCAL_SPEAKERS[number];
 export type NoiseMode = 'gentle' | 'isolate' | 'lavasr';
 
 export function neuralVoiceAvailable(): boolean {
-  // ponytail: optional model-cache portability is the next milestone.
+  // The experimental Python workflow is retired; native cleanup stays local.
   return false;
-}
-
-function neuralRecording(input: string, directory: string, noise: NoiseMode, speaker: LocalSpeaker): string {
-  if (!neuralVoiceAvailable()) throw new Error('Neural voice conversion is not available in this development package yet; use local gentle cleanup.');
-  const fingerprint = createHash('sha256').update(readFileSync(input))
-    .update(readFileSync('scripts/neural-voice.py')).update(readFileSync('studio/neural-models.json'))
-    .update(readFileSync('scripts/neural-requirements.txt')).update(`${noise}:${speaker}`).digest('hex').slice(0, 16);
-  const output = join(directory, `neural-${fingerprint}.wav`);
-  if (existsSync(output) && wavSeconds(output)) return output;
-  mkdirSync(directory, { recursive: true });
-  const run = spawnSync('.local-voice/venv/bin/python', [
-    'scripts/neural-voice.py', '--input', input, '--output', output,
-    '--cleanup', noise === 'lavasr' ? 'lavasr' : 'none', '--speaker', speaker,
-  ], { encoding: 'utf8', timeout: 180_000, env: { ...process.env, HF_HUB_OFFLINE: '1', HF_HUB_DISABLE_TELEMETRY: '1', TRANSFORMERS_OFFLINE: '1' } });
-  if (run.error || run.status !== 0) throw new Error(`Local neural processing failed: ${run.error?.message ?? run.stderr.slice(-1800)}`);
-  const seconds = wavSeconds(output);
-  if (!seconds || Math.abs(seconds - wavSeconds(input)!) > 0.1) throw new Error('Neural output failed the duration check. Original take preserved.');
-  return output;
 }
 
 export function enhanceRecording(input: string, directory: string, edits = '', noise: NoiseMode = 'gentle', speaker: LocalSpeaker = 'own'): string {
   input = resolve(input);
   directory = resolve(directory);
   if (!LOCAL_SPEAKERS.includes(speaker)) throw new Error('Unknown local target voice');
-  const neural = noise === 'lavasr' || speaker !== 'own';
-  if (neural) {
-    const clean = noise === 'lavasr' ? input : enhanceRecording(input, directory, '', noise);
-    input = neuralRecording(clean, directory, noise, speaker);
-  }
+  if (noise === 'lavasr' || speaker !== 'own')
+    throw new Error('Neural voice conversion is unavailable; use local gentle or RNNoise cleanup.');
   const model = join(PACKAGE_ROOT, 'library/audio-models/cb.rnnn');
   if (noise === 'isolate' && !existsSync(model)) throw new Error('Local noise model missing: library/audio-models/cb.rnnn');
   // Run speech denoising on the original voice before changing pitch/formants.
-  const isolation = noise === 'isolate' && !neural ? 'aresample=48000,arnndn=m=cb.rnnn:mix=1' : '';
-  const cleanup = noise === 'isolate' || neural ? VOICE_CLEANUP.replace('afftdn=nr=6:nf=-40,', '') : VOICE_CLEANUP;
+  const isolation = noise === 'isolate' ? 'aresample=48000,arnndn=m=cb.rnnn:mix=1' : '';
+  const cleanup = noise === 'isolate' ? VOICE_CLEANUP.replace('afftdn=nr=6:nf=-40,', '') : VOICE_CLEANUP;
   const filters = [isolation, edits, cleanup, 'loudnorm=I=-16:TP=-2:LRA=11'].filter(Boolean).join(',');
   const fingerprint = createHash('sha256').update(readFileSync(input)).update(filters + ':48000:mono:pcm_s16le');
   if (noise === 'isolate') fingerprint.update(readFileSync(model));

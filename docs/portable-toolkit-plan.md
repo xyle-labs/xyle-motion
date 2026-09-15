@@ -186,11 +186,11 @@ that with the actual external video path. Recording previews also currently
 derive project paths from the old `videos/` convention.
 
 Keep native recording/import, FFmpeg cleanup, take previews and attachment.
-Preserve local-only processing and original-take protections. Port optional
-OpenVoice/LavaSR setup to a writable local cache with pinned provenance; do not
-download weights during npm installation. They are not prerequisites for basic
-creation. Do not advertise optional conversion as available until its installed
-package path has been verified; the original installation remains usable.
+Preserve local-only processing and original-take protections. The experimental
+OpenVoice/LavaSR helpers and vulnerable Python dependency pins have been retired.
+Any future replacement needs compatible, security-reviewed dependencies,
+model-license review and verified local inference. Do not download weights
+during npm installation or advertise unavailable conversion.
 
 **Done:** a client SVG/state, palette, music and effect resolve alongside
 bundled resources. Duplicate IDs fail clearly. A recorded/imported take can be

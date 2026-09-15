@@ -67,11 +67,10 @@ that the models are not subject to copyright. Preserve the exact source and
 checksum in [the model provenance](../library/audio-models/provenance.json) and
 the [upstream usage notes](../library/audio-models/README.md); do not label it MIT.
 
-Experimental neural helpers are present in the source repository but excluded
-from the npm package. The downloaded Python packages and OpenVoice/LavaSR/Vocos
-weights are not included. A source-code license is not automatically a model
-weight license; review the pinned downloads before enabling or distributing
-that optional workflow. The current package keeps it disabled.
+The experimental neural helpers and Python dependency pins have been retired.
+OpenVoice/LavaSR/Vocos weights are not included. A source-code license is not
+automatically a model weight license; review any replacement dependencies and
+models before enabling or distributing neural conversion.
 
 Keep `private: true` until a separate npm release is approved. Revisit this
 review when dependencies, assets or the distribution format change.

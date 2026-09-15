@@ -39,7 +39,7 @@
           </div>
           <div class="trim-row"><label>Trim start <input id="trim-start" type="number" min="0" step="0.05" value="0"> s</label><label>Trim end <input id="trim-end" type="number" min="0.05" step="0.05"> s</label><label>Voice starts after <input id="lead" type="number" min="0" max="3" step="0.05" value="0.25"> s</label><span class="hint">Use the original player to find pauses to trim.</span></div>
           <div class="actions"><button id="process">Enhance & preview</button><button id="watch" disabled>Preview full mix</button><button id="apply" class="primary" disabled>Use in video</button></div>
-          <p class="hint">Everything runs locally. OpenVoice V2 transfers speaker tone from a bundled target while using your recorded performance. LavaSR restores speech and reduces noise. Target names identify the supplied voices; your accent and delivery may remain. Preview before using in video.</p>
+          <p class="hint">Cleanup and pitch/tone effects run locally and preserve your original. RNNoise reduces noise; gentle cleanup reduces rumble and hiss. Neural restoration and speaker conversion are unavailable. Preview before using in video.</p>
         </div>
       </section>
       <p id="status" role="status" aria-live="polite"></p>
