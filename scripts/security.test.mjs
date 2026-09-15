@@ -70,6 +70,8 @@ test('real hooks block forced artifacts, staged secrets, messages and history', 
     git('commit', '-m', 'Allow approved identity and project references');
     Object.assign(env, { GIT_AUTHOR_NAME: 'Public Contributor', GIT_AUTHOR_EMAIL: '123+contributor@users.noreply.github.com', GIT_COMMITTER_NAME: 'GitHub', GIT_COMMITTER_EMAIL: 'noreply@github.com' });
     git('commit', '--allow-empty', '-m', 'Accept public contribution metadata');
+    Object.assign(env, { GIT_AUTHOR_NAME: 'dependabot[bot]', GIT_AUTHOR_EMAIL: '49699333+dependabot[bot]@users.noreply.github.com' });
+    git('commit', '--allow-empty', '-m', 'Automated dependency update', '-m', 'Signed-off-by: dependabot[bot] <' + 'support' + '@github.com>');
     check('history', true);
 
     for (const path of ['.env', '.claude/history.jsonl', 'recordings/take.wav', 'docs/archive.zip']) {
@@ -86,7 +88,7 @@ test('real hooks block forced artifacts, staged secrets, messages and history', 
     writeFileSync(join(cwd, 'safe.txt'), 'Working copy is clean; index is not.');
     check('staged', false);
     reset();
-    for (const content of [['person', 'private.invalid'].join('@'), '/' + 'Users/private/example', JSON.stringify({ role: 'assistant', content: 'private' })]) {
+    for (const content of [['person', 'private.invalid'].join('@'), ['support', 'github.com'].join('@') + ' ' + ['person', 'private.invalid'].join('@'), '/' + 'Users/private/example', JSON.stringify({ role: 'assistant', content: 'private' })]) {
       writeFileSync(join(cwd, 'safe.txt'), content);
       git('add', 'safe.txt');
       check('staged', false);
