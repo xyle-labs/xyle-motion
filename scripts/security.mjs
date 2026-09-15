@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const identity = 'Jesse <jesse@xyle>';
+const publicIdentity = 'Jesse <no-reply@xyle.de>';
 const legacyIdentity = 'Xyle Motion contributors <contributors@example.invalid>';
 const version = '8.30.1';
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -33,8 +34,16 @@ export function checkEntry(path, mode, bytes, reviewed) {
 
 export function checkIdentity(value) {
   const githubIdentity = /^[^<>\r\n]+ <(?:[A-Za-z0-9_.+%\[\]-]+@users\.noreply\.github\.com|noreply@github\.com)> \d+ [+-]\d{4}$/;
-  if (![identity, legacyIdentity].some(allowed => value.startsWith(`${allowed} `)) && !githubIdentity.test(value))
+  if (![identity, publicIdentity, legacyIdentity].some(allowed => value.startsWith(`${allowed} `)) && !githubIdentity.test(value))
     throw new Error('Unapproved Git identity blocked. Use your GitHub noreply address or run npm run security:setup for the neutral identity.');
+}
+
+export function reviewedMetadata(commit, metadata) {
+  // Owner accepted this existing squash commit's author address once. The exact
+  // object ID fixes its contents; all other metadata and every new commit are scanned.
+  if (commit === '006e010cb8b61c2718630f4a73374cfe9ca1ac28')
+    return metadata.replace(/^author [^\n]+/m, `author ${identity} 0 +0000`);
+  return metadata;
 }
 
 async function main() {
@@ -100,7 +109,7 @@ async function main() {
         return { mode, oid, path: path.join('\t') };
       })
       : commits.flatMap(commit => {
-        const metadata = git('cat-file', 'commit', commit);
+        const metadata = reviewedMetadata(commit, git('cat-file', 'commit', commit));
         for (const role of ['author', 'committer']) {
           const value = metadata.split('\n').find(line => line.startsWith(`${role} `));
           checkIdentity(value?.slice(role.length + 1) ?? '');

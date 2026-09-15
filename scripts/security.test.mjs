@@ -7,7 +7,17 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
-import { checkEntry, checkIdentity } from './security.mjs';
+import { checkEntry, checkIdentity, reviewedMetadata } from './security.mjs';
+
+test('accepted historical author exception is limited to one immutable commit', () => {
+  const author = 'Jesse <author@example.com> 123 +0000';
+  const rest = '\ncommitter GitHub <noreply@github.com> 123 +0000\n\nMessage retained.\n';
+  const metadata = `tree abc\nauthor ${author}${rest}`;
+  const accepted = reviewedMetadata('006e010cb8b61c2718630f4a73374cfe9ca1ac28', metadata);
+  assert.equal(accepted, `tree abc\nauthor Jesse <jesse@xyle> 0 +0000${rest}`);
+  assert.equal(reviewedMetadata('f'.repeat(40), metadata), metadata);
+  assert.throws(() => checkIdentity(author), /identity blocked/);
+});
 
 test('privacy guard rejects unapproved identities, arbitrary binaries, changed media and unsafe links', () => {
   const bytes = Buffer.from([0, 1, 2]);
@@ -22,6 +32,8 @@ test('privacy guard rejects unapproved identities, arbitrary binaries, changed m
   checkEntry('.agents/skills/xyle-motion', '120000', Buffer.from('../../skills/xyle-motion'), {});
   checkIdentity('Xyle Motion contributors <contributors@example.invalid> 123 +0000');
   checkIdentity('Jesse <jesse@xyle> 123 +0000');
+  checkIdentity('Jesse <no-reply@xyle.de> 123 +0000');
+  assert.throws(() => checkIdentity('Private Author <no-reply@xyle.de> 123 +0000'), /identity blocked/);
   checkIdentity('Public Contributor <123+contributor@users.noreply.github.com> 123 +0000');
   checkIdentity('dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com> 123 +0000');
   checkIdentity('GitHub <noreply@github.com> 123 +0000');
@@ -68,6 +80,10 @@ test('real hooks block forced artifacts, staged secrets, messages and history', 
     writeFileSync(join(cwd, 'safe.txt'), 'Project references: Waray and Fallen Coconut.\n');
     git('add', 'safe.txt');
     git('commit', '-m', 'Allow approved identity and project references');
+    Object.assign(env, { GIT_AUTHOR_EMAIL: 'no-reply@xyle.de', GIT_COMMITTER_EMAIL: 'no-reply@xyle.de' });
+    writeFileSync(join(cwd, 'safe.txt'), 'Public contact: no-reply@xyle.de\n');
+    git('add', 'safe.txt');
+    git('commit', '-m', 'Use public contact no-reply@xyle.de');
     Object.assign(env, { GIT_AUTHOR_NAME: 'Public Contributor', GIT_AUTHOR_EMAIL: '123+contributor@users.noreply.github.com', GIT_COMMITTER_NAME: 'GitHub', GIT_COMMITTER_EMAIL: 'noreply@github.com' });
     git('commit', '--allow-empty', '-m', 'Accept public contribution metadata');
     Object.assign(env, { GIT_AUTHOR_NAME: 'dependabot[bot]', GIT_AUTHOR_EMAIL: '49699333+dependabot[bot]@users.noreply.github.com' });
@@ -88,7 +104,7 @@ test('real hooks block forced artifacts, staged secrets, messages and history', 
     writeFileSync(join(cwd, 'safe.txt'), 'Working copy is clean; index is not.');
     check('staged', false);
     reset();
-    for (const content of [['person', 'private.invalid'].join('@'), ['support', 'github.com'].join('@') + ' ' + ['person', 'private.invalid'].join('@'), '/' + 'Users/private/example', JSON.stringify({ role: 'assistant', content: 'private' })]) {
+    for (const content of [['person', 'private.invalid'].join('@'), ['support', 'github.com'].join('@') + ' ' + ['person', 'private.invalid'].join('@'), ['person', 'xyle.de'].join('@'), ['no-reply', 'xyle.de.invalid'].join('@'), 'no-reply@xyle.de ' + ['person', 'private.invalid'].join('@'), '/' + 'Users/private/example', JSON.stringify({ role: 'assistant', content: 'private' })]) {
       writeFileSync(join(cwd, 'safe.txt'), content);
       git('add', 'safe.txt');
       check('staged', false);

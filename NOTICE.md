@@ -1,19 +1,29 @@
-# Release and third-party notices
+# License and third-party notices
 
-This public development preview is available for review, but no open-source
-license has been granted. The npm package remains private and UNLICENSED until
-the code/media licensing review is complete. No npm release has been published.
+Xyle Motion's original code, documentation, skill, examples, SVG artwork, themes
+and procedurally generated music/effects are licensed under [MIT](LICENSE).
+Retain the copyright and permission notice when redistributing them.
+The npm package remains a private development preview; no npm release has been
+published.
 
-Remotion is a separate dependency with its own license:
-https://github.com/remotion-dev/remotion/blob/main/LICENSE.md
-This repository's visibility does not change Remotion's terms.
+Third-party software and models retain their own terms. The MIT license does
+not relicense dependencies or grant rights to their code, binaries or weights.
+See the [dependency license review](docs/licensing.md) for the pinned versions,
+distribution boundaries and upstream sources.
 
-The generic SVGs and procedural music/effects were copied from the existing
-working toolkit. Review ownership and choose explicit redistribution terms
-before granting redistribution rights. Client projects, human recordings, studio
-logos/wordmarks and the original Git history were not copied.
+In particular, **Remotion 4.0.522 uses a separate Remotion License**. Its free
+license covers individuals, for-profit organizations with up to three employees,
+nonprofits and noncommercial evaluation. Other users need a Company License.
+Its restrictions on distributing a derivative of Remotion still apply; this
+project does not bundle or relicense Remotion's implementation.
+Read the [terms for the installed version](https://github.com/remotion-dev/remotion/blob/v4.0.522/LICENSE.md).
 
-The bundled RNNoise model retains its provenance and upstream usage notes in
-library/audio-models/. Optional neural model weights are not included or
-automatically downloaded. Source helpers for the optional neural workflow are
-retained for the next portability milestone and are not part of the npm bundle.
+The bundled `library/audio-models/cb.rnnn` is Gregor Richards' conjoined-burgers
+RNNoise model. It is excluded from this project's MIT grant: its author states
+that the models are not subject to copyright. The upstream tools and README
+are not bundled. Retain the [model provenance and upstream statement](library/audio-models/README.md).
+
+Optional neural model weights are not included or automatically downloaded by
+the package. The experimental source helpers are outside the npm bundle; their
+downloaded dependencies and weights need their own license review before that
+workflow is enabled or redistributed.

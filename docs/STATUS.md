@@ -1,9 +1,9 @@
 # Development status — 15 September 2026
 
 Xyle Motion: package `@xyle-labs/motion`, command `explainer`, skill `$xyle-motion`.
-The repository is public by owner request. The npm package remains private and
-UNLICENSED pending source/media licensing review. Public visibility does not
-grant an open-source license.
+The repository is public by owner request. Original source and assets use MIT;
+third-party terms and the pinned dependency review are in NOTICE.md and
+docs/licensing.md. The npm package remains private pending publication review.
 
 Implemented: compiled npm package; explicit external video directories; bundled
 SVG/theme/audio resolution; isolated renderer/browser caches; portable basic
@@ -20,7 +20,7 @@ A contact sheet was visually inspected; MP4 streams and duration were probed.
 Full human listening/playback review remains outstanding.
 
 Next: project asset/theme roots and workspace creation defaults; the client project pilot;
-optional local model-cache portability; Linux CI; final source/media licensing
+optional local model-cache portability; Linux CI; optional model licensing
 and publication review. Optional neural speaker conversion is deliberately
 unavailable in this build; existing local cleanup and native recording remain.
 The current artwork is suitable for engine validation, not a finished brand kit.
