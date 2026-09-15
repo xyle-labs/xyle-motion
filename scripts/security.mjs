@@ -6,7 +6,8 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const identity = 'Xyle Motion contributors <contributors@example.invalid>';
+const identity = 'Jesse <jesse@xyle>';
+const legacyIdentity = 'Xyle Motion contributors <contributors@example.invalid>';
 const version = '8.30.1';
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 function run(command, args, input) {
@@ -31,7 +32,9 @@ export function checkEntry(path, mode, bytes, reviewed) {
 }
 
 export function checkIdentity(value) {
-  if (!value.startsWith(`${identity} `)) throw new Error('Personal Git identity blocked. Run npm run security:setup; remove author/committer environment overrides.');
+  const githubIdentity = /^[^<>\r\n]+ <(?:[A-Za-z0-9_.+%\[\]-]+@users\.noreply\.github\.com|noreply@github\.com)> \d+ [+-]\d{4}$/;
+  if (![identity, legacyIdentity].some(allowed => value.startsWith(`${allowed} `)) && !githubIdentity.test(value))
+    throw new Error('Unapproved Git identity blocked. Use your GitHub noreply address or run npm run security:setup for the neutral identity.');
 }
 
 async function main() {
@@ -61,9 +64,12 @@ async function main() {
     }
     for (const hook of ['pre-commit', 'commit-msg', 'pre-push']) chmodSync(join(root, '.githooks', hook), 0o755);
     git('config', '--local', 'core.hooksPath', '.githooks');
-    git('config', '--local', 'user.name', 'Xyle Motion contributors');
-    git('config', '--local', 'user.email', 'contributors@example.invalid');
-    console.log('Installed repository hooks and neutral Git identity.');
+    try { checkIdentity(git('var', 'GIT_AUTHOR_IDENT').trim()); }
+    catch {
+      git('config', '--local', 'user.name', 'Xyle Motion contributors');
+      git('config', '--local', 'user.email', 'contributors@example.invalid');
+    }
+    console.log('Installed repository hooks and approved Git identity.');
     return;
   }
   if (!['staged', 'history', 'message'].includes(mode)) throw new Error('Usage: node scripts/security.mjs setup|staged|history|message <file>');

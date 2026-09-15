@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import { checkEntry, checkIdentity } from './security.mjs';
 
-test('privacy guard rejects personal identities, arbitrary binaries, changed media and unsafe links', () => {
+test('privacy guard rejects unapproved identities, arbitrary binaries, changed media and unsafe links', () => {
   const bytes = Buffer.from([0, 1, 2]);
   const path = 'library/music/test.wav';
   const reviewed = { [path]: createHash('sha256').update(bytes).digest('hex') };
@@ -21,6 +21,13 @@ test('privacy guard rejects personal identities, arbitrary binaries, changed med
   assert.throws(() => checkEntry('link', '120000', Buffer.from('../../private'), {}), /symlink/);
   checkEntry('.agents/skills/xyle-motion', '120000', Buffer.from('../../skills/xyle-motion'), {});
   checkIdentity('Xyle Motion contributors <contributors@example.invalid> 123 +0000');
+  checkIdentity('Jesse <jesse@xyle> 123 +0000');
+  checkIdentity('Public Contributor <123+contributor@users.noreply.github.com> 123 +0000');
+  checkIdentity('dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com> 123 +0000');
+  checkIdentity('GitHub <noreply@github.com> 123 +0000');
+  assert.throws(() => checkIdentity('Contributor <123+contributor' + '@' + 'users.noreply.github.com.invalid> 123 +0000'), /identity blocked/);
+  assert.throws(() => checkIdentity('Private Author <jesse@xyle> 123 +0000'), /identity blocked/);
+  assert.throws(() => checkIdentity('Jesse <author@example.com> 123 +0000'), /identity blocked/);
   assert.throws(() => checkIdentity('Private Author <author@example.com> 123 +0000'), /identity blocked/);
 });
 
@@ -55,6 +62,14 @@ test('real hooks block forced artifacts, staged secrets, messages and history', 
     writeFileSync(join(cwd, 'safe.txt'), 'Public example\n');
     git('add', '.');
     git('commit', '-m', 'Public example');
+    check('history', true);
+
+    Object.assign(env, { GIT_AUTHOR_NAME: 'Jesse', GIT_AUTHOR_EMAIL: 'jesse@xyle', GIT_COMMITTER_NAME: 'Jesse', GIT_COMMITTER_EMAIL: 'jesse@xyle' });
+    writeFileSync(join(cwd, 'safe.txt'), 'Project references: Waray and Fallen Coconut.\n');
+    git('add', 'safe.txt');
+    git('commit', '-m', 'Allow approved identity and project references');
+    Object.assign(env, { GIT_AUTHOR_NAME: 'Public Contributor', GIT_AUTHOR_EMAIL: '123+contributor@users.noreply.github.com', GIT_COMMITTER_NAME: 'GitHub', GIT_COMMITTER_EMAIL: 'noreply@github.com' });
+    git('commit', '--allow-empty', '-m', 'Accept public contribution metadata');
     check('history', true);
 
     for (const path of ['.env', '.claude/history.jsonl', 'recordings/take.wav', 'docs/archive.zip']) {

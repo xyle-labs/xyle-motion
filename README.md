@@ -4,8 +4,9 @@ Create editable explainer videos inside the project that owns the knowledge,
 brand and artwork. One npm package, one coding-agent skill, no MCP server.
 The agent writes `video.yaml`; the shared renderer produces the video.
 
-**Development preview:** this repository is private while portability and public
-release licensing are reviewed. The package is not published to npm yet.
+**Public development preview:** the source is available for review. Code and
+media licensing are still under review; no open-source license has been granted.
+The package remains private and is not published to npm.
 
 ## Try the packed build in another project
 
@@ -81,7 +82,7 @@ public redistribution review is pending. See [NOTICE.md](NOTICE.md).
 ## Development
 
 Run `npm run security:setup` after cloning to install the commit/push checks and
-set this repository's neutral Git identity. See [SECURITY.md](SECURITY.md) for
+retain an approved Git identity or use the neutral fallback. See [SECURITY.md](SECURITY.md) for
 coverage, media review and remote protection requirements.
 
 ```sh
@@ -97,3 +98,5 @@ These settings are optional. The renderer uses its own dependencies and an
 explicit empty configuration, rather than the host project's Remotion config.
 
 See [the extraction plan](docs/portable-toolkit-plan.md).
+
+Contributions go through pull requests. See [CONTRIBUTING.md](CONTRIBUTING.md).

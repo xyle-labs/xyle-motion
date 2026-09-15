@@ -1,7 +1,9 @@
-# Development status — 14 September 2026
+# Development status — 15 September 2026
 
 Xyle Motion: package `@xyle-labs/motion`, command `explainer`, skill `$xyle-motion`.
-The repository and npm package remain private pending public release review.
+The repository is public by owner request. The npm package remains private and
+UNLICENSED pending source/media licensing review. Public visibility does not
+grant an open-source license.
 
 Implemented: compiled npm package; explicit external video directories; bundled
 SVG/theme/audio resolution; isolated renderer/browser caches; portable basic

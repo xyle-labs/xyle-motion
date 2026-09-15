@@ -14,7 +14,7 @@ description = "Keep personal email addresses out of source and messages"
 regex = '''[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}'''
 [[rules.allowlists]]
 regexTarget = "match"
-regexes = ['''(?i)^[A-Za-z0-9._%+-]+@(?:example\.(?:com|org|net|invalid)|users\.noreply\.github\.com)$''']
+regexes = ['''(?i)^[A-Za-z0-9._%+-]+@(?:example\.(?:com|org|net|invalid)|users\.noreply\.github\.com)$''', '''^noreply@github\.com$''']
 
 [[rules]]
 id = "chat-export"

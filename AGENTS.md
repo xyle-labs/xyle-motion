@@ -13,11 +13,18 @@ effects and scene patterns. Validate and inspect actual frames; use playback
 for motion/audio. Do not claim checks that were not performed.
 
 Run npm run check and npm run build for logic changes. Packaging changes must
-pass the installed tarball smoke check in scripts/smoke.mjs. Keep the repo and
-package private until the release contents and licenses have been reviewed.
+pass the installed tarball smoke check in scripts/smoke.mjs. The repository is
+public by owner request; keep npm publication disabled until the release contents
+and licenses have been reviewed. Do not choose a license without owner approval.
 
-Run npm run security:setup after cloning. Keep the neutral repository Git
-identity, scan with npm run security:check before pushing, and never bypass
-security hooks. Keep client names, personal paths, recordings and assistant
-sessions out of source and commit messages. Review new media before updating
+Run npm run security:setup after cloning. Use Jesse <jesse@xyle> for new commits;
+neutral commits and contributors' GitHub noreply identities remain allowed.
+Scan with npm run security:check before
+pushing, and never bypass security hooks. Project and studio references are
+acceptable. Keep confidential client content, personal paths, recordings and
+assistant sessions out of source and commit messages. Review new media before updating
 scripts/reviewed-media.json; retain public upstream license attribution.
+
+Use branches and pull requests for changes to main. Required CI must pass and
+review discussions must be resolved. Review changes to workflows, security
+checks and media manifests explicitly; never bypass branch rules.

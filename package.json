@@ -46,10 +46,15 @@
     "docs/",
     "NOTICE.md",
     "SECURITY.md",
+    "CONTRIBUTING.md",
     "remotion.config.js"
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/xyle-labs/motion.git"
-  }
+    "url": "git+https://github.com/xyle-labs/xyle-motion.git"
+  },
+  "bugs": {
+    "url": "https://github.com/xyle-labs/xyle-motion/issues"
+  },
+  "homepage": "https://github.com/xyle-labs/xyle-motion#readme"
 }
