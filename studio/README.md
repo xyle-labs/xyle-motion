@@ -1,13 +1,13 @@
 # Narration studio
 
-For substantial voice changes, use the new **OpenVoice V2 speaker conversion**
-and **LavaSR v2 restoration** controls. Both run locally; see the
-[setup and audition guide](NEURAL-VOICE.md).
+Use gentle cleanup, RNNoise suppression, and pitch/tone controls for local
+voice processing. The experimental OpenVoice/LavaSR workflow has been retired;
+see its [status](NEURAL-VOICE.md).
 
 Start from the repository root:
 
 ```sh
-npm run explainer record project-based-learning
+npm run explainer record /path/to/video-directory
 ```
 
 Open the printed local address in Chrome or Safari. Keep the terminal running.
@@ -29,8 +29,8 @@ be installed and on PATH for importing and enhancing recordings.
    Strong cleanup uses a bundled RNNoise model locally; Gentle uses conventional
    hiss/rumble reduction. Both even out loudness. Strong reduction may damage
    speech, so compare by listening. Complete noise removal is not guaranteed.
-   These older disguise presets are conventional audio effects. For neural
-   conversion, choose an OpenVoice V2 target under **Speaker conversion**.
+   These disguise presets are conventional audio effects. Neural speaker
+   conversion is unavailable.
 5. Choose how to fit the clip: **Keep my pace** requires the take to fit;
    **Gentle speed-up** allows up to 20% without exceeding 169 estimated WPM;
    **Extend scene** keeps your reading

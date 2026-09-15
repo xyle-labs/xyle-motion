@@ -59,12 +59,14 @@ another provider account. It reads only relevant project context and scene YAML.
 `new`, `inspect`, `assets`, `validate`, `preview`, `frame`, `contact-sheet`,
 `record`, `enhance`, and `render` all accept an explicit video directory.
 Use `--scene <id>` for isolated changes and `--time <seconds>` for a frame.
+Scene IDs must start with an ASCII letter or digit and contain only ASCII
+letters, digits, underscores or hyphens (for example, `intro` or `scene-2`).
 `contact-sheet --frames 3` shows three interior moments per scene.
 
 `record` opens the local recording studio. Recorded takes, gentle/RNNoise
 cleanup, trims, pitch controls and local previews are retained. Optional
-OpenVoice/LavaSR conversion is disabled in this development package until its
-model setup is portable. No audio is uploaded. Text without a take is silent.
+OpenVoice/LavaSR conversion is unavailable; its experimental Python workflow
+has been retired. No audio is uploaded. Text without a take is silent.
 
 Studio/ordinary scene renders omit the music bed. Full stitched renders include
 it; processed-take previews in the recording studio also audition the bed at

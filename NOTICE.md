@@ -24,6 +24,6 @@ that the models are not subject to copyright. The upstream tools and README
 are not bundled. Retain the [model provenance and upstream statement](library/audio-models/README.md).
 
 Optional neural model weights are not included or automatically downloaded by
-the package. The experimental source helpers are outside the npm bundle; their
-downloaded dependencies and weights need their own license review before that
-workflow is enabled or redistributed.
+the package. The experimental OpenVoice/LavaSR helpers and Python dependency
+pins have been retired. Any future replacement requires its own dependency
+and model-license review before it is enabled or redistributed.

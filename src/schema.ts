@@ -95,7 +95,8 @@ const Element = z.strictObject({
 });
 
 const Scene = z.strictObject({
-  id: z.string(),
+  // Scene IDs become cache and export filenames; never accept path syntax.
+  id: z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]*$/, 'Scene ID must start with a letter or digit and contain only letters, digits, underscores or hyphens.'),
   duration: z.number().positive(),
   palette: z.record(z.string(), z.string()).optional(), // local brand colours override the video theme
   narration: Narration.optional(),

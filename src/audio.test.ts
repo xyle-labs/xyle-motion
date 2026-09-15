@@ -1,12 +1,27 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { tmpdir } from 'node:os';
-import { readFileSync, writeFileSync, mkdtempSync, rmSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, mkdtempSync, rmSync, statSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { parse } from 'yaml';
 import { VideoSpec } from './schema.ts';
-import { scanSounds, wavSeconds, encodeWav, resolveAudio } from './audio.ts';
+import { scanSounds, wavSeconds, encodeWav, resolveAudio, enhanceRecording, neuralVoiceAvailable } from './audio.ts';
+
+test('retired neural processing rejects requests before writing files', () => {
+  const directory = mkdtempSync(join(tmpdir(), 'retired-voice-'));
+  try {
+    const input = join(directory, 'original.wav');
+    const output = join(directory, 'enhanced');
+    const original = encodeWav(new Int16Array(48000), 48000);
+    writeFileSync(input, original);
+    assert.equal(neuralVoiceAvailable(), false);
+    assert.throws(() => enhanceRecording(input, output, '', 'lavasr'), /Neural voice conversion is unavailable/);
+    assert.throws(() => enhanceRecording(input, output, '', 'gentle', 'en-default'), /Neural voice conversion is unavailable/);
+    assert.equal(existsSync(output), false);
+    assert.deepEqual(readFileSync(input), original);
+  } finally { rmSync(directory, { recursive: true, force: true }); }
+});
 
 /** A WAV whose fmt/data are pushed off their usual offsets by a padding chunk,
  *  as some recorders write them. This is the case that broke the first
