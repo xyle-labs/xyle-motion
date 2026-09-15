@@ -77,9 +77,6 @@ Shared client asset/theme configuration and the client project pilot are next. E
 narration/music paths are relative to the video directory. No cloud rendering,
 accounts, or paid features are included.
 
-Bundled artwork and audio are original candidates from the working toolkit;
-public redistribution review is pending. See [NOTICE.md](NOTICE.md).
-
 ## Development
 
 Run `npm run security:setup` after cloning to install the commit/push checks and
