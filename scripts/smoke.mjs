@@ -84,7 +84,8 @@ for (const extension of ['png', 'webp', 'svg']) {
   const pixel = (x, y) => [...result.stdout.subarray((y * 320 + x) * 3, (y * 320 + x) * 3 + 3)];
   const green = pixel(160, 120);
   assert.ok(green[1] > 240 && green[0] < 10 && green[2] < 10, `${extension}: image must decode`);
-  assert.deepEqual(pixel(160, 35), [0, 0, 255], `${extension}: preserve aspect ratio`);
+  // Stretching the 2:1 image into the square box would turn this pixel green.
+  assert.deepEqual(pixel(160, 85), [0, 0, 255], `${extension}: preserve aspect ratio`);
   assert.deepEqual(pixel(75, 120), [0, 0, 255], `${extension}: preserve transparency`);
 }
 assert.match(call('render', artwork), /3 rendered, 0 reused/);

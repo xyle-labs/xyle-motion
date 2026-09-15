@@ -1,9 +1,13 @@
 # Portable video toolkit — implementation plan
 
 Status: extraction started, 14 September 2026. Chosen name: Xyle Motion.
-GitHub `xyle-labs/motion`, npm `@xyle-labs/motion`, executable `explainer`.
+GitHub `xyle-labs/xyle-motion`, npm `@xyle-labs/motion`, executable `explainer`.
 The first installed-package smoke check passes; shared client configuration and
 the client project pilot are next. See STATUS.md for measured checks and release limits. The actual client project checkout/path will be located before its pilot.
+
+Video-relative PNG/WebP/SVG artwork now uses `type: asset` with `file:`;
+see the README for supported paths and controls. The shared configuration,
+asset roots and milestones below remain a plan, not additional CLI options.
 
 **Ship one installable package and one portable skill. The client project owns
 its videos and assets. Reuse the existing renderer. Prove this in the client project before
@@ -35,7 +39,7 @@ video-toolkit/
   studio/                   Existing local recording interface
   library/                  Generic, redistributable SVGs, music and effects
   themes/                   Generic palettes cleared for redistribution
-  skills/explainer-video/   Self-contained workflow and references
+  skills/xyle-motion/       Self-contained workflow and references
   examples/minimal/         Small neutral example, also used for smoke checks
   scripts/                  Build, audio generators and relevant checks
   docs/                     Current implementation guidance

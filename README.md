@@ -102,7 +102,7 @@ and state controls. Files are embedded in render props; no package files change.
 ## Current boundary
 
 External video directories, local artwork and bundled assets/palettes/audio are implemented.
-Shared client asset/theme configuration is next. Explicit
+Shared client asset/theme configuration and the client project pilot are next. Explicit
 narration/music paths are relative to the video directory. No cloud rendering,
 accounts, or paid features are included.
 
