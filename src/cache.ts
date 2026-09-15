@@ -35,8 +35,9 @@ export function sceneKey(
   audio: Record<string, string> = {},
 ): string {
   const used = scene.elements
-    .filter((e) => e.type === 'asset' && e.asset)
-    .map((e) => [e.asset, assets[e.asset!]]);
+    .filter((e) => e.type === 'asset')
+    .map((e) => e.file ? `file:${e.file}` : e.asset!)
+    .map((id) => [id, assets[id]]);
   const heard = [
     ...scene.elements.filter((e) => e.sound).map((e) => audio[`sound:${e.sound!.id}`]),
     audio[`narration:${scene.id}`],

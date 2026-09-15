@@ -28,7 +28,7 @@ export async function renderRecordingPreview(directory: string, spec: VideoSpec,
   const scene = { ...original, duration: processed.duration, narration: { ...original.narration!, audio: processed.file } };
   const previewSpec = { ...spec, scenes: [scene] };
   const project = directory;
-  const { assets, errors } = resolveAssets(previewSpec);
+  const { assets, errors } = resolveAssets(previewSpec, undefined, project);
   const { audio, errors: audioErrors } = resolveAudio(previewSpec, project);
   if (errors.length || audioErrors.length) throw new Error([...errors, ...audioErrors].join('\n'));
   const palette = spec.video.theme ? loadTheme(spec.video.theme) : {};

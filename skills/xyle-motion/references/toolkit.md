@@ -82,7 +82,7 @@ There is no `registry/assets.yaml`. **The filesystem is the registry**:
 id form, derived). `explainer assets <project>` lists everything available and
 marks what the project uses — run it before creating an asset (Rule 2).
 
-Assets are inlined into the page, not `<img>`-ed, so `currentColor` and
+Bundled assets are inlined into the page, not `<img>`-ed, so `currentColor` and
 `var(--accent, ...)` in the art follow the element's `color`. Author new assets
 that way: `viewBox="0 0 200 200"`, `width="100%" height="100%"`, main shape in
 `currentColor`, highlights in `var(--accent, #e0a458)`.
@@ -93,12 +93,21 @@ element to name one, and validation lists the options when it does not. To
 change state mid-scene, use two elements with `at`/`until` — that is what those
 fields are for; there is no `set:` verb.
 
+Project artwork uses `type: asset` with `file: artwork/plant.png` instead of
+`asset:`. PNG, WebP and self-contained SVG are supported. Paths are video-relative
+and must remain inside that directory, including symlinks; URLs and absolute
+paths are rejected. Normal asset layout, animation, groups and repeats apply.
+The image fits inside width/height without cropping or stretching and retains
+transparency. Local SVGs render as images, with explicit colours and no `state`
+or inherited theme styling. The CLI lists referenced files, validates paths and
+invalidates only affected scene caches when file bytes change.
+
 ## Commands and audio
 
 Use `npm exec -- explainer <command> <video-directory>` from the host project.
 All paths to narration and explicit music files are relative to that video.
 Bundled SVGs, music and effects are read from the installed package. Run assets
-for the inventory. New client asset roots are the next portability milestone.
+for the inventory. Project artwork uses video-relative `file` paths; shared client roots are pending.
 
 Element sound: `{ id, at, volume }`; scene narration: `{ text, audio, volume }`;
 video music: `{ file, volume }`. A bare music name selects a bundled bed. Current

@@ -88,12 +88,14 @@ const spec = values.scene
 
 // Asset references are checked here rather than in the Zod schema: the schema
 // also runs in the browser, where there is no library to look at.
-const { assets, errors } = resolveAssets(spec);
+const { assets, errors } = resolveAssets(spec, undefined, dir);
 if (errors.length) die(errors.join('\n'));
 
 if (command === 'assets') {
   const library = scan();
   const used = new Set(Object.keys(assets));
+  for (const id of used)
+    if (id.startsWith('file:')) library.set(id, resolve(dir, id.slice(5)));
   for (const [id, path] of library)
     console.log(`${used.has(id) ? '*' : ' '} ${id.padEnd(30)} ${path}`);
   console.log(`\n${used.size} of ${library.size} used by ${project}  (* = used)`);

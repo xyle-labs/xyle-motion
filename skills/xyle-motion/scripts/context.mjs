@@ -28,7 +28,7 @@ try {
         id: s.id, start: seconds(from), duration: s.duration,
         elements: s.elements?.length ?? 0,
         narration: s.narration?.audio ? 'attached (not verified)' : s.narration?.text ? 'unrecorded (silent)' : 'none',
-        assets: [...new Set((s.elements ?? []).filter((e) => e.asset).map((e) => e.asset))],
+        assets: [...new Set((s.elements ?? []).filter((e) => e.asset || e.file).map((e) => e.file ? `file:${e.file}` : e.asset))],
         sounds: [...new Set((s.elements ?? []).filter((e) => e.sound).map((e) => e.sound.id))],
       };
     });

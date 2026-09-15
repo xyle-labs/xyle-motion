@@ -4,8 +4,8 @@
 // unused so far (tags, @version pins). A second file listing what the directory
 // already says is a file that can only ever be wrong. Add it when something
 // needs a field that cannot be derived.
-import { readFileSync, readdirSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { readFileSync, readdirSync, realpathSync, statSync } from 'node:fs';
+import { extname, isAbsolute, join, relative, resolve, sep, win32 } from 'node:path';
 import type { VideoSpec } from './schema.ts';
 
 import { PACKAGE_ROOT } from './paths.ts';
@@ -61,18 +61,47 @@ export function suggest(id: string, known: Iterable<string>): string | undefined
   return bestDistance <= Math.max(3, Math.round(id.length * 0.4)) ? best : undefined;
 }
 
-/** Inline the SVGs a spec actually references, and report anything wrong with
+/** Embed bundled SVGs and local images, and report anything wrong with
  *  the references. The renderer never touches the filesystem, so the sources
  *  travel to it as input props. */
-export function resolveAssets(spec: VideoSpec, root = LIBRARY) {
+export function resolveAssets(spec: VideoSpec, root = LIBRARY, project?: string) {
   const library = scan(root);
   const assets: Record<string, string> = {};
   const errors: string[] = [];
 
   for (const scene of spec.scenes) {
     for (const element of scene.elements) {
-      if (element.type !== 'asset' || !element.asset) continue;
+      if (element.type !== 'asset') continue;
       const where = `element "${element.id}" in scene "${scene.id}"`;
+      if (element.file) {
+        try {
+          if (!project) throw new Error('local artwork needs a video directory');
+          const file = element.file;
+          if (isAbsolute(file) || win32.isAbsolute(file) || file.includes('\\') || /^[a-z][a-z0-9+.-]*:/i.test(file))
+            throw new Error('artwork path must be video-relative');
+          const inside = (base: string, path: string) => {
+            const rel = relative(base, path);
+            if (rel === '..' || rel.startsWith(`..${sep}`) || isAbsolute(rel))
+              throw new Error('artwork path must stay inside the video directory');
+          };
+          const base = realpathSync(project);
+          const path = resolve(base, file);
+          inside(base, path);
+          const mime = { '.png': 'image/png', '.webp': 'image/webp', '.svg': 'image/svg+xml' }[extname(file).toLowerCase()];
+          if (!mime) throw new Error('artwork must be PNG, WebP or SVG');
+          const real = realpathSync(path);
+          inside(base, real);
+          if (!statSync(real).isFile()) throw new Error('artwork must be a regular file');
+          // Image data travels with props, like bundled SVGs; no server or package writes.
+          assets[`file:${file}`] ??= `data:${mime};base64,${readFileSync(real).toString('base64')}`;
+        } catch (error) {
+          const message = (error as NodeJS.ErrnoException).code === 'ENOENT'
+            ? 'artwork file not found' : (error as Error).message;
+          errors.push(`${where}: ${element.file}: ${message}`);
+        }
+        continue;
+      }
+      if (!element.asset) continue;
       const path = library.get(element.asset);
 
       if (!path) {

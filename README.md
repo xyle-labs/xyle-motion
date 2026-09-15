@@ -70,10 +70,39 @@ Studio/ordinary scene renders omit the music bed. Full stitched renders include
 it; processed-take previews in the recording studio also audition the bed at
 the appropriate timeline offset. Inspect real playback and listen before delivery.
 
+## Project artwork
+
+Keep illustrations beside the video's YAML and reference them with `file`:
+
+```yaml
+- id: illustration
+  type: asset
+  file: artwork/plant.png
+  x: center
+  y: center
+  width: 800
+  height: 1000
+  enter: { type: fade }
+  exit: { type: none }
+```
+
+PNG, WebP and SVG files use the usual asset positioning, size, opacity, groups,
+repeats and animations. The image fits inside its width/height box without
+stretching or cropping; transparency is preserved. Paths are relative to the
+video directory and must stay inside it, including symlink targets. Absolute
+paths and URLs are rejected. `assets` lists referenced local files alongside the
+bundled library; `validate` reports missing files. Changed image bytes invalidate
+only the rendered scenes using them.
+
+Use exactly one of `file` or a bundled `asset` ID. Local SVGs render as images;
+they do not inherit theme colours or support `state`. Use self-contained SVGs
+with explicit colours and a `viewBox`. Bundled SVGs retain their inline styling
+and state controls. Files are embedded in render props; no package files change.
+
 ## Current boundary
 
-External video directories and bundled assets/palettes/audio are implemented.
-Shared client asset/theme configuration and the client project pilot are next. Explicit
+External video directories, local artwork and bundled assets/palettes/audio are implemented.
+Shared client asset/theme configuration is next. Explicit
 narration/music paths are relative to the video directory. No cloud rendering,
 accounts, or paid features are included.
 

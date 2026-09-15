@@ -53,6 +53,7 @@ const Element = z.strictObject({
   group: z.string().optional(), // a group element id; coordinates remain scene-relative
 
   asset: z.string().optional(), // library id, e.g. energy.coal_powerplant
+  file: z.string().min(1).optional(), // video-relative PNG, WebP or SVG; instead of asset
   state: z.string().optional(), // a data-state group inside that SVG
 
   text: z.string().optional(),
@@ -154,10 +155,11 @@ export const VideoSpec = z
           add(`${where} is a line and needs both "from" and "to"`);
         if (el.type === 'text' && !el.text)
           add(`${where} is text and needs "text"`);
-        if (el.type === 'asset' && !el.asset)
-          add(`${where} is an asset and needs "asset"`);
-        if (el.type !== 'asset' && (el.asset || el.state))
-          add(`${where} is a ${el.type}, so "asset"/"state" do nothing here`);
+        if (el.type === 'asset' && Boolean(el.asset) === Boolean(el.file))
+          add(`${where} needs exactly one of "asset" or "file"`);
+        if (el.file && el.state) add(`${where}: local files do not support "state"`);
+        if (el.type !== 'asset' && (el.asset || el.file || el.state))
+          add(`${where} is a ${el.type}, so "asset"/"file"/"state" do nothing here`);
         if (el.type === 'callout' && !el.text)
           add(`${where} is a callout and needs "text"`);
         if (el.type === 'callout' && !el.target)
