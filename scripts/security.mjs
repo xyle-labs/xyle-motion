@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const identity = 'Jesse <jesse@xyle>';
+const publicIdentity = 'Jesse <no-reply@xyle.de>';
 const legacyIdentity = 'Xyle Motion contributors <contributors@example.invalid>';
 const version = '8.30.1';
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -33,7 +34,7 @@ export function checkEntry(path, mode, bytes, reviewed) {
 
 export function checkIdentity(value) {
   const githubIdentity = /^[^<>\r\n]+ <(?:[A-Za-z0-9_.+%\[\]-]+@users\.noreply\.github\.com|noreply@github\.com)> \d+ [+-]\d{4}$/;
-  if (![identity, legacyIdentity].some(allowed => value.startsWith(`${allowed} `)) && !githubIdentity.test(value))
+  if (![identity, publicIdentity, legacyIdentity].some(allowed => value.startsWith(`${allowed} `)) && !githubIdentity.test(value))
     throw new Error('Unapproved Git identity blocked. Use your GitHub noreply address or run npm run security:setup for the neutral identity.');
 }
 

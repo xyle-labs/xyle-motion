@@ -32,6 +32,8 @@ test('privacy guard rejects unapproved identities, arbitrary binaries, changed m
   checkEntry('.agents/skills/xyle-motion', '120000', Buffer.from('../../skills/xyle-motion'), {});
   checkIdentity('Xyle Motion contributors <contributors@example.invalid> 123 +0000');
   checkIdentity('Jesse <jesse@xyle> 123 +0000');
+  checkIdentity('Jesse <no-reply@xyle.de> 123 +0000');
+  assert.throws(() => checkIdentity('Private Author <no-reply@xyle.de> 123 +0000'), /identity blocked/);
   checkIdentity('Public Contributor <123+contributor@users.noreply.github.com> 123 +0000');
   checkIdentity('dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com> 123 +0000');
   checkIdentity('GitHub <noreply@github.com> 123 +0000');
@@ -78,6 +80,10 @@ test('real hooks block forced artifacts, staged secrets, messages and history', 
     writeFileSync(join(cwd, 'safe.txt'), 'Project references: Waray and Fallen Coconut.\n');
     git('add', 'safe.txt');
     git('commit', '-m', 'Allow approved identity and project references');
+    Object.assign(env, { GIT_AUTHOR_EMAIL: 'no-reply@xyle.de', GIT_COMMITTER_EMAIL: 'no-reply@xyle.de' });
+    writeFileSync(join(cwd, 'safe.txt'), 'Public contact: no-reply@xyle.de\n');
+    git('add', 'safe.txt');
+    git('commit', '-m', 'Use public contact no-reply@xyle.de');
     Object.assign(env, { GIT_AUTHOR_NAME: 'Public Contributor', GIT_AUTHOR_EMAIL: '123+contributor@users.noreply.github.com', GIT_COMMITTER_NAME: 'GitHub', GIT_COMMITTER_EMAIL: 'noreply@github.com' });
     git('commit', '--allow-empty', '-m', 'Accept public contribution metadata');
     Object.assign(env, { GIT_AUTHOR_NAME: 'dependabot[bot]', GIT_AUTHOR_EMAIL: '49699333+dependabot[bot]@users.noreply.github.com' });
@@ -98,7 +104,7 @@ test('real hooks block forced artifacts, staged secrets, messages and history', 
     writeFileSync(join(cwd, 'safe.txt'), 'Working copy is clean; index is not.');
     check('staged', false);
     reset();
-    for (const content of [['person', 'private.invalid'].join('@'), ['support', 'github.com'].join('@') + ' ' + ['person', 'private.invalid'].join('@'), '/' + 'Users/private/example', JSON.stringify({ role: 'assistant', content: 'private' })]) {
+    for (const content of [['person', 'private.invalid'].join('@'), ['support', 'github.com'].join('@') + ' ' + ['person', 'private.invalid'].join('@'), ['person', 'xyle.de'].join('@'), ['no-reply', 'xyle.de.invalid'].join('@'), 'no-reply@xyle.de ' + ['person', 'private.invalid'].join('@'), '/' + 'Users/private/example', JSON.stringify({ role: 'assistant', content: 'private' })]) {
       writeFileSync(join(cwd, 'safe.txt'), content);
       git('add', 'safe.txt');
       check('staged', false);

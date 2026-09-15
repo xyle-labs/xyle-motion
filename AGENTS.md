@@ -18,8 +18,10 @@ public by owner request; original source and assets use MIT, with third-party
 exceptions in NOTICE.md. Keep npm publication disabled until the release contents
 have been approved. Preserve third-party terms when changing dependencies or media.
 
-Run npm run security:setup after cloning. Use Jesse <jesse@xyle> for new commits;
-neutral commits and contributors' GitHub noreply identities remain allowed.
+Run npm run security:setup after cloning. Use Jesse <no-reply@xyle.de> for new
+maintainer commits and explicitly select that address for GitHub squash merges.
+Jesse <jesse@xyle>, neutral commits and contributors' GitHub noreply identities
+remain allowed.
 Scan with npm run security:check before
 pushing, and never bypass security hooks. Project and studio references are
 acceptable. Keep confidential client content, personal paths, recordings and
