@@ -56,5 +56,8 @@ Before publishing, audit all remote refs and the exact npm tarball. Rewriting
 local history does not remove old commits from a remote, other clones, forks,
 pull requests, caches or backups. Coordinate any replacement of remote history;
 rotate credentials if any are ever found. The owner approved public visibility
-and the retained identity/project references. Npm publication remains disabled
-until the separate source/media licensing review is complete.
+and the retained identity/project references. The historical author exception
+is restricted to commit `006e010cb8b61c2718630f4a73374cfe9ca1ac28`; it does not
+allow that address in new commits or files. Original source and assets use MIT,
+with third-party terms documented in NOTICE.md. Npm publication remains disabled
+until a release is separately approved.

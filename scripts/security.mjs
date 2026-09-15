@@ -37,6 +37,14 @@ export function checkIdentity(value) {
     throw new Error('Unapproved Git identity blocked. Use your GitHub noreply address or run npm run security:setup for the neutral identity.');
 }
 
+export function reviewedMetadata(commit, metadata) {
+  // Owner accepted this existing squash commit's author address once. The exact
+  // object ID fixes its contents; all other metadata and every new commit are scanned.
+  if (commit === '006e010cb8b61c2718630f4a73374cfe9ca1ac28')
+    return metadata.replace(/^author [^\n]+/m, `author ${identity} 0 +0000`);
+  return metadata;
+}
+
 async function main() {
   const mode = process.argv[2];
   const tools = resolve(root, git('rev-parse', '--git-path', 'security-tools').trim());
@@ -100,7 +108,7 @@ async function main() {
         return { mode, oid, path: path.join('\t') };
       })
       : commits.flatMap(commit => {
-        const metadata = git('cat-file', 'commit', commit);
+        const metadata = reviewedMetadata(commit, git('cat-file', 'commit', commit));
         for (const role of ['author', 'committer']) {
           const value = metadata.split('\n').find(line => line.startsWith(`${role} `));
           checkIdentity(value?.slice(role.length + 1) ?? '');

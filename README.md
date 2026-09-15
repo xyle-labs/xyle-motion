@@ -4,9 +4,10 @@ Create editable explainer videos inside the project that owns the knowledge,
 brand and artwork. One npm package, one coding-agent skill, no MCP server.
 The agent writes `video.yaml`; the shared renderer produces the video.
 
-**Public development preview:** the source is available for review. Code and
-media licensing are still under review; no open-source license has been granted.
-The package remains private and is not published to npm.
+**Public development preview:** Xyle Motion's original code and assets use the
+[MIT license](LICENSE). Dependencies and the bundled RNNoise model retain their
+own terms; see [NOTICE.md](NOTICE.md), especially Remotion's separate company
+licensing requirements. The package remains private and is not published to npm.
 
 ## Try the packed build in another project
 

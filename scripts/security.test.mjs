@@ -7,7 +7,17 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
-import { checkEntry, checkIdentity } from './security.mjs';
+import { checkEntry, checkIdentity, reviewedMetadata } from './security.mjs';
+
+test('accepted historical author exception is limited to one immutable commit', () => {
+  const author = 'Jesse <author@example.com> 123 +0000';
+  const rest = '\ncommitter GitHub <noreply@github.com> 123 +0000\n\nMessage retained.\n';
+  const metadata = `tree abc\nauthor ${author}${rest}`;
+  const accepted = reviewedMetadata('006e010cb8b61c2718630f4a73374cfe9ca1ac28', metadata);
+  assert.equal(accepted, `tree abc\nauthor Jesse <jesse@xyle> 0 +0000${rest}`);
+  assert.equal(reviewedMetadata('f'.repeat(40), metadata), metadata);
+  assert.throws(() => checkIdentity(author), /identity blocked/);
+});
 
 test('privacy guard rejects unapproved identities, arbitrary binaries, changed media and unsafe links', () => {
   const bytes = Buffer.from([0, 1, 2]);

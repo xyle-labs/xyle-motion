@@ -25,7 +25,7 @@
   },
   "version": "0.1.0-dev.0",
   "description": "Project-local explainer videos for coding agents. One CLI, one skill, editable YAML.",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "bin": {
     "explainer": "dist/bin/explainer.js"
   },

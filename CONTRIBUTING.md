@@ -1,7 +1,9 @@
 # Contributing
 
-This is a public development preview, currently UNLICENSED. See NOTICE.md before
-reusing or contributing code or media. Discuss substantial work in an issue first.
+This is a public development preview under the [MIT license](LICENSE), with
+third-party exceptions in [NOTICE.md](NOTICE.md). Contributions of original code
+and assets use the same MIT terms. Only contribute material you have the right
+to license, and retain third-party notices. Discuss substantial work in an issue first.
 
 Use Node.js 24, Git and full FFmpeg. Clone your fork, create a branch, then run:
 
