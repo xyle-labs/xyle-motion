@@ -23,6 +23,8 @@ scenes:
     elements:
       - { id: a, asset: people.person, sound: { id: pop } }
       - { id: b, asset: people.person }
+      - { id: c, type: asset, file: 'artwork/local picture.png' }
+      - { id: d, type: asset, file: 'artwork/local picture.png' }
   - id: end
     duration: 2
     narration: { text: Goodbye, audio: take.wav }
@@ -37,7 +39,7 @@ scenes:
     assert.equal(result.scenes[1].start, 4.7);
     assert.equal(result.scenes[1].narration, 'unrecorded (silent)');
     assert.equal(result.scenes[2].narration, 'attached (not verified)');
-    assert.deepEqual(result.scenes[1].assets, ['people.person']);
+    assert.deepEqual(result.scenes[1].assets, ['people.person', 'file:artwork/local picture.png']);
     assert.deepEqual(result.scenes[1].sounds, ['pop']);
     assert.equal(result.video.music.file, 'calm');
     const selected = run('videos/demo', 'claim');

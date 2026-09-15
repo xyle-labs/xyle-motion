@@ -6,20 +6,23 @@ third-party terms and the pinned dependency review are in NOTICE.md and
 docs/licensing.md. The npm package remains private pending publication review.
 
 Implemented: compiled npm package; explicit external video directories; bundled
-SVG/theme/audio resolution; isolated renderer/browser caches; portable basic
-recording studio; scene inspection; neutral example; self-contained skill.
+SVG/theme/audio resolution; video-relative PNG/WebP/SVG artwork; isolated
+renderer/browser caches; portable basic recording studio; scene inspection;
+neutral example; self-contained skill.
 The existing deterministic renderer and scene cache are retained.
 
-Validation: 51 logic and recording checks, plus the skill context check. The
+Validation: 56 logic and recording checks, plus the skill context check. The
 packed-package smoke test installs into an unrelated directory with spaces and
 an apostrophe, ignores a deliberately failing host Remotion config, renders
 frames/a sheet/a six-second MP4, checks unchanged/one-scene/music-only cache
-behavior, exercises gentle and RNNoise cleanup, and verifies the installed
+behavior, decodes local PNG/WebP/SVG artwork with proportion and transparency
+assertions, checks image-byte edits invalidate only consuming scenes,
+exercises gentle and RNNoise cleanup, and verifies the installed
 package is unchanged. The browser's initial download was also exercised.
 A contact sheet was visually inspected; MP4 streams and duration were probed.
 Full human listening/playback review remains outstanding.
 
-Next: project asset/theme roots and workspace creation defaults; the client project pilot;
+Next: shared project asset/theme roots and workspace creation defaults; the client project pilot;
 optional local model-cache portability; Linux CI; optional model licensing
 and publication review. Optional neural speaker conversion is deliberately
 unavailable in this build; existing local cleanup and native recording remain.

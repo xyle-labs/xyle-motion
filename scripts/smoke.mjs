@@ -51,6 +51,48 @@ writeFileSync(specPath, readFileSync(specPath, 'utf8').replace('An idea, made vi
 assert.match(call('render', video), /1 rendered, 1 reused/);
 writeFileSync(specPath, readFileSync(specPath, 'utf8').replace('volume: 0.12', 'volume: 0.13'));
 assert.match(call('render', video), /0 rendered, 2 reused/);
+// Real PNG/WebP/SVG files in an external project, including aspect ratio and alpha.
+const artwork = join(cwd, 'videos', 'local artwork');
+mkdirSync(artwork);
+// Synthetic 80x40 transparent images with a central green rectangle (original test art).
+const pictures = {'png': 'iVBORw0KGgoAAAANSUhEUgAAAFAAAAAoCAYAAABpYH0BAAAACXBIWXMAAAABAAAAAQBPJcTWAAAAfUlEQVR4nO3ZwQmAQAwAQQ/sv2W9HibgCTtpICz5ZV0h99cL/F0BUQFRAVEBUQFRAVEBUQHRfMBnz8nWnkFdICogKiAqICogKiAqICogKiAqICogKiAqICogKiAqICogKiAqIJoPOPxzOF0XiAqICogKiAqICogKiAqICoheXvQCoKNzB44AAAAASUVORK5CYII=', 'webp': 'UklGRi4AAABXRUJQVlA4TCEAAAAvT8AJEA8w/xHzHwwyaZs5mH+Xc1AFZW9E/ycgkgPoA4YA'};
+for (const [extension, bytes] of Object.entries(pictures))
+  writeFileSync(join(artwork, `picture.${extension}`), Buffer.from(bytes, 'base64'));
+writeFileSync(join(artwork, 'picture.svg'), '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 40"><rect x="20" y="10" width="40" height="20" fill="#00ff00"/></svg>');
+writeFileSync(join(artwork, 'video.yaml'), `version: 1
+video: { id: local-artwork, width: 320, height: 240, fps: 10, background: '#0000ff' }
+scenes:
+${['png', 'webp', 'svg'].map(extension => `  - id: ${extension}
+    duration: 1
+    elements:
+      - id: picture
+        type: asset
+        file: picture.${extension}
+        width: 200
+        height: 200
+        enter: { type: appear }
+        exit: { type: none }
+`).join('')}`);
+assert.match(call('validate', artwork), /3 assets/);
+assert.match(call('inspect', artwork), /file:picture.png/);
+assert.match(call('assets', artwork), /file:picture.webp/);
+for (const extension of ['png', 'webp', 'svg']) {
+  call('frame', artwork, '--scene', extension, '--time', '0.5');
+  const result = spawnSync('ffmpeg', ['-v', 'error', '-i', join(artwork, 'output', `frame-${extension}-0.5s.png`),
+    '-frames:v', '1', '-f', 'rawvideo', '-pix_fmt', 'rgb24', 'pipe:1']);
+  assert.equal(result.status, 0, result.stderr?.toString());
+  const pixel = (x, y) => [...result.stdout.subarray((y * 320 + x) * 3, (y * 320 + x) * 3 + 3)];
+  const green = pixel(160, 120);
+  assert.ok(green[1] > 240 && green[0] < 10 && green[2] < 10, `${extension}: image must decode`);
+  // Stretching the 2:1 image into the square box would turn this pixel green.
+  assert.deepEqual(pixel(160, 85), [0, 0, 255], `${extension}: preserve aspect ratio`);
+  assert.deepEqual(pixel(75, 120), [0, 0, 255], `${extension}: preserve transparency`);
+}
+assert.match(call('render', artwork), /3 rendered, 0 reused/);
+assert.match(call('render', artwork), /0 rendered, 3 reused/);
+run('ffmpeg', ['-v', 'error', '-y', '-f', 'lavfi', '-i', 'color=red:s=80x40:d=0.1', '-frames:v', '1', join(artwork, 'picture.png')]);
+assert.match(call('render', artwork), /1 rendered, 2 reused/);
+call('contact-sheet', artwork);
 // Exercise cleanup where the package/model path itself contains an apostrophe.
 run(process.execPath, ['--input-type=module', '-e', `
   import { pathToFileURL } from 'node:url';

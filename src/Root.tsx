@@ -4,6 +4,7 @@ import {
   Audio,
   Composition,
   Freeze,
+  Img,
   Sequence,
   useCurrentFrame,
 } from 'remotion';
@@ -56,6 +57,9 @@ const Piece: React.FC<Kit & { element: Element; index: number; lifetime: number 
   );
   const motion: React.CSSProperties = { opacity, transform, ...css };
   const fill: React.CSSProperties = { width: '100%', height: '100%' };
+
+  if (element.type === 'asset' && element.file)
+    return <Img src={assets[`file:${element.file}`]} style={{ ...fill, ...motion, objectFit: 'contain' }} />;
 
   if (element.type === 'asset') {
     // Inlined rather than <img>, so `currentColor` and the theme variables in
