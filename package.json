@@ -11,10 +11,10 @@
     "prepack": "npm run build"
   },
   "dependencies": {
-    "@remotion/cli": "4.0.523",
+    "@remotion/cli": "4.0.524",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "remotion": "4.0.523",
+    "remotion": "4.0.524",
     "yaml": "2.9.1",
     "zod": "4.5.4"
   },
