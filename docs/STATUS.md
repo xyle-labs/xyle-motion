@@ -26,7 +26,8 @@ package is unchanged. It also imports synthetic MP3 narration without modifying
 the original and compares scene mix audio with the full export. Decoded scene
 audio is trimmed before stitching so AAC padding cannot shift later takes.
 Named narration markers resolve card/effect arrivals and flag changed takes
-for review.
+for review. Opt-in narration-only ducking shares the final/preview bed envelope;
+synthetic checks cover its reduction, attack, release and silent-take behavior.
 The browser's initial download was also exercised.
 A contact sheet was visually inspected; MP4 streams and duration were probed.
 Full human listening/playback review remains outstanding.

@@ -192,9 +192,41 @@ export function musicPath(file: string, project: string) {
     : join(PACKAGE_ROOT, 'library', 'music', `${file.replace(/\.wav$/, '')}.wav`);
 }
 
+/** Narration-only speech ranges. Pauses under 250 ms stay in one range. */
+export function narrationRanges(spec: VideoSpec, directory: string): [number, number][] {
+  const ranges: [number, number][] = [];
+  let offset = 0;
+  for (const scene of spec.scenes) {
+    const voice = scene.narration;
+    if (voice?.audio && voice.volume > 0) {
+      const input = join(directory, voice.audio);
+      const seconds = Math.min(wavSeconds(input) ?? 0, scene.duration);
+      const result = spawnSync('ffmpeg', ['-hide_banner', '-nostdin', '-i', input,
+        '-af', `volume=${voice.volume},silencedetect=noise=-40dB:duration=0.25`, '-f', 'null', '-'],
+        { encoding: 'utf8', timeout: 120_000 });
+      if (result.error || result.status !== 0) throw new Error(`Narration ducking analysis failed: ${result.error?.message ?? result.stderr.slice(-500)}`);
+      let start = 0, silent = false;
+      for (const event of result.stderr.matchAll(/silence_(start|end): ([\d.]+)/g)) {
+        const time = Math.min(Number(event[2]), seconds);
+        if (event[1] === 'start') {
+          if (time > start) ranges.push([offset + start, offset + time]);
+          silent = true;
+        } else { start = time; silent = false; }
+      }
+      if (!silent && start < seconds) ranges.push([offset + start, offset + seconds]);
+    }
+    offset += scene.duration;
+  }
+  return ranges;
+}
+
 /** Same bed envelope for the final export and a scene preview at its timeline offset. */
-export function musicMixFilter(volume: number, duration: number, offset = 0): string {
+export function musicMixFilter(volume: number, duration: number, offset = 0, narration: [number, number][] = []): string {
   const t = `(t+${offset})`;
   const fade = Math.min(1.5, duration);
-  return `[1:a]volume='${volume}*min(1,${t}/0.6)*max(0,min(1,(${duration}-${t})/${fade}))':eval=frame[bed];[0:a][bed]amix=inputs=2:duration=first:normalize=0[out]`;
+  // A short lookahead attack protects the first consonant; release spans pauses/cuts.
+  const activity = narration.map(([start, end]) => `max(0,min(1,min((${t}-${start - 0.08})/0.08,(${end + 0.35}-${t})/0.35)))`)
+    .reduce((a, b) => a ? `max(${a},${b})` : b, '');
+  const duck = activity ? `*(1-0.75*${activity})` : '';
+  return `[1:a]volume='${volume}*min(1,${t}/0.6)*max(0,min(1,(${duration}-${t})/${fade}))${duck}':eval=frame[bed];[0:a][bed]amix=inputs=2:duration=first:normalize=0[out]`;
 }

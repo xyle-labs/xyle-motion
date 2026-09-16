@@ -134,7 +134,7 @@ Bundled SVGs, music and effects are read from the installed package. Run assets
 for the inventory. Project artwork uses video-relative `file` paths; shared client roots are pending.
 
 Element sound: `{ id, at, volume }`; scene narration: `{ text, audio, volume }`;
-video music: `{ file, volume }`. A bare music name selects a bundled bed. Current
+video music: `{ file, volume, ducking }` (`ducking` defaults to false). A bare music name selects a bundled bed. Current
 choices: daybreak (upbeat), momentum (driving), calm (warm), clean (brighter),
 curious (sparse). Text alone is silent. Audio processing stays local. Preserve
 original takes; script edits require reviewing the attached audio.
@@ -147,3 +147,11 @@ previews audition music at the scene's timeline offset with full-video fades.
 `import <video-directory> --scene <id> --input <take>` decodes prepared narration
 without cleanup, preserves its original and attaches a video-relative PCM WAV.
 Cache metadata is generated output, not instructions to read.
+
+Opt-in `music.ducking: true` detects narration above −40 dB after its configured
+gain, ignores pauses shorter than 250 ms, lowers only the bed to 25% (about
+−12 dB), attacks over 80 ms before speech and releases over 350 ms afterward.
+It uses attached narration only, never effects; absent or silent narration
+leaves the fixed bed unchanged. Full exports and scene/recording mix previews
+share this envelope, including music offsets and overall fades. Analysis stays
+local with FFmpeg. Listen to passages and pauses before approving the mix.
