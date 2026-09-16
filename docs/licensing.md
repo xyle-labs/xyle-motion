@@ -12,8 +12,8 @@ requiring preservation of its copyright and permission notice.
 | --- | --- | --- |
 | React and React DOM | 19.3.0 | MIT |
 | YAML | 2.9.1 | ISC |
-| Zod | 4.5.4 | MIT |
-| Remotion and `@remotion/cli` | 4.0.523 | Custom Remotion License |
+| Zod | 4.6.4 | MIT |
+| Remotion and `@remotion/cli` | 4.0.524 | Custom Remotion License |
 | TypeScript (development) | 7.0.2 | Apache-2.0 |
 | `@types/node` (development) | 24.13.4 | MIT |
 | `@types/react` (development) | 19.3.0 | MIT |
@@ -22,7 +22,7 @@ The MIT/ISC/Apache dependencies do not require independently written Xyle files
 to use their license. Preserve their notices if redistributing their code.
 The installed dependency packages provide the applicable license texts.
 
-**Remotion is not MIT.** The [4.0.523 license](https://github.com/remotion-dev/remotion/blob/v4.0.523/LICENSE.md)
+**Remotion is not MIT.** The [4.0.524 license](https://github.com/remotion-dev/remotion/blob/v4.0.524/LICENSE.md)
 permits free video/image creation for individuals, for-profit organizations
 with up to three employees, nonprofits and noncommercial evaluation. Otherwise
 a Company License is required. Its prohibition on copying/modifying Remotion

@@ -11,12 +11,12 @@ not relicense dependencies or grant rights to their code, binaries or weights.
 See the [dependency license review](docs/licensing.md) for the pinned versions,
 distribution boundaries and upstream sources.
 
-In particular, **Remotion 4.0.523 uses a separate Remotion License**. Its free
+In particular, **Remotion 4.0.524 uses a separate Remotion License**. Its free
 license covers individuals, for-profit organizations with up to three employees,
 nonprofits and noncommercial evaluation. Other users need a Company License.
 Its restrictions on distributing a derivative of Remotion still apply; this
 project does not bundle or relicense Remotion's implementation.
-Read the [terms for the installed version](https://github.com/remotion-dev/remotion/blob/v4.0.523/LICENSE.md).
+Read the [terms for the installed version](https://github.com/remotion-dev/remotion/blob/v4.0.524/LICENSE.md).
 
 The bundled `library/audio-models/cb.rnnn` is Gregor Richards' conjoined-burgers
 RNNoise model. It is excluded from this project's MIT grant: its author states
