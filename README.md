@@ -90,6 +90,9 @@ Inspect real playback and listen before delivery. `explainer --help` lists comma
 For manual word/effect synchronization, see the skill reference's
 [narration timing markers](skills/xyle-motion/references/toolkit.md#narration-timing-markers).
 Named scene markers resolve element arrivals and flag changed takes for review.
+Set `video.music.ducking: true` to lower music beneath attached narration with
+smooth attack/release; it is off by default and uses the same envelope in `mix`
+and full exports. Review speech and pauses by listening before delivery.
 
 ## Project artwork
 

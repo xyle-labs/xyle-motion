@@ -135,6 +135,7 @@ export const VideoSpec = z
         .strictObject({
           file: z.string(),
           volume: z.number().min(0).max(1).default(0.18),
+          ducking: z.boolean().default(false),
         })
         .optional(),
     }),

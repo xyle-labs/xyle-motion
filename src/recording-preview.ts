@@ -4,7 +4,7 @@ import { remotionArgs, remotionCwd, rendererDiagnostic } from './remotion.ts';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
-import { musicMixFilter, musicPath, resolveAudio } from './audio.ts';
+import { musicMixFilter, musicPath, narrationRanges, resolveAudio } from './audio.ts';
 import { rendererFingerprint } from './cache.ts';
 import { resolveAssets } from './library.ts';
 import { loadTheme } from './theme.ts';
@@ -37,9 +37,11 @@ export async function renderRecordingPreview(directory: string, spec: VideoSpec,
   const duration = spec.scenes.reduce((sum, s) => sum + s.duration, 0) + scene.duration - original.duration;
   const music = spec.video.music;
   const track = music ? musicPath(music.file, project) : undefined;
+  const ranges = music?.ducking ? narrationRanges({ ...spec, scenes: spec.scenes.map((s, i) => i === index ? scene : s) }, project) : [];
+  const filter = musicMixFilter(music?.volume ?? 0, duration, offset, ranges);
   const key = createHash('sha256').update(props).update(rendererFingerprint())
     .update(readFileSync(new URL(import.meta.url)))
-    .update(musicMixFilter(music?.volume ?? 0, duration, offset))
+    .update(filter)
     .update(track ? readFileSync(track) : '').digest('hex').slice(0, 24);
   const cache = join(directory, processed ? 'recordings' : 'output', 'previews');
   const output = join(cache, `${key}.mp4`);
@@ -54,7 +56,7 @@ export async function renderRecordingPreview(directory: string, spec: VideoSpec,
     if (music && track) {
       await run('ffmpeg', ['-v', 'error', '-nostdin', '-i', rendered,
         '-stream_loop', '-1', '-ss', String(offset), '-i', track,
-        '-filter_complex', musicMixFilter(music.volume, duration, offset),
+        '-filter_complex', filter,
         '-map', '0:v', '-map', '[out]', '-c:v', 'copy', '-c:a', 'aac',
         '-t', String(scene.duration), '-movflags', '+faststart', '-y', mixed]);
       renameSync(mixed, output);

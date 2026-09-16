@@ -44,7 +44,9 @@ Use the existing bed for a narrow edit unless the user requests a change.
 
 Offer at most two plausible music choices when mood is undecided. Select volume
 against the actual voice rather than assuming one number suits every recording.
-There is no automatic ducking. A serious explanation may need a sparse bed;
+Optional `music.ducking: true` lowers the bed under attached narration; it is
+off by default. It does not replace listening for pumping, abrupt recovery or
+masked words. A serious explanation may need a sparse bed;
 an upbeat one may suit daybreak. The current starter is a default, not a mandate.
 
 Use a cue to explain an event: `paper-turn` for a document change, `wood-tap` or
