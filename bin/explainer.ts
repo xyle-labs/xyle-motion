@@ -95,6 +95,8 @@ if (command === 'import') {
 if (command === 'mix') {
   if (!values.scene) die('mix needs --scene id');
   try {
+    const { markerReviews } = resolveAudio({ ...loaded, scenes: keepScene(loaded, values.scene) }, dir);
+    if (markerReviews.length) console.log(`timing markers need narration review: ${markerReviews.join(', ')}`);
     const result = await renderRecordingPreview(dir, loaded, values.scene);
     const scene = loaded.scenes.find(scene => scene.id === values.scene)!;
     if (scene.narration && !scene.narration.audio)
@@ -172,7 +174,8 @@ if (command === 'enhance') {
   process.exit(0);
 }
 
-const { audio, errors: audioErrors, unrecorded } = resolveAudio(spec, dir);
+const { audio, errors: audioErrors, unrecorded, markerReviews } = resolveAudio(spec, dir);
+if (markerReviews.length) console.log(`timing markers need narration review: ${markerReviews.join(', ')}`);
 if (audioErrors.length) die(audioErrors.join('\n'));
 if (unrecorded.length)
   console.log(`scripts awaiting recording (silent): ${unrecorded.join(', ')}`);

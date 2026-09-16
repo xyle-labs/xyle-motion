@@ -87,6 +87,10 @@ Studio/ordinary scene renders omit the music bed. Use `mix`, the recording
 studio's processed-take preview, or the full export to review the balance.
 Inspect real playback and listen before delivery. `explainer --help` lists commands.
 
+For manual word/effect synchronization, see the skill reference's
+[narration timing markers](skills/xyle-motion/references/toolkit.md#narration-timing-markers).
+Named scene markers resolve element arrivals and flag changed takes for review.
+
 ## Project artwork
 
 Keep illustrations beside the video's YAML and reference them with `file`:

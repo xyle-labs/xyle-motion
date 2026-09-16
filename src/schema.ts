@@ -85,7 +85,7 @@ const Element = z.strictObject({
   stagger: z.number().min(0).default(0), // extra enter delay per copy, seconds
 
   opacity: z.number().min(0).max(1).default(1),
-  at: z.number().min(0).default(0),
+  at: z.union([z.number().min(0), z.strictObject({ marker: z.string().min(1), offset: z.number().default(0) })]).default(0),
   until: z.number().positive().optional(),
 
   enter: Enter.default(ENTER_DEFAULT),
@@ -100,7 +100,22 @@ const Scene = z.strictObject({
   duration: z.number().positive(),
   palette: z.record(z.string(), z.string()).optional(), // local brand colours override the video theme
   narration: Narration.optional(),
+  markers: z.array(z.strictObject({ id: z.string().min(1), time: z.number().min(0) })).default([]),
+  markersAudio: z.string().regex(/^[a-f0-9]{64}$/, 'markersAudio must be the reviewed narration SHA-256').optional(),
   elements: z.array(Element),
+}).transform((scene, ctx) => {
+  const markers = new Map<string, number>();
+  for (const marker of scene.markers) {
+    if (markers.has(marker.id)) ctx.addIssue({ code: 'custom', message: `duplicate marker "${marker.id}" in scene "${scene.id}"` });
+    if (marker.time >= scene.duration) ctx.addIssue({ code: 'custom', message: `marker "${marker.id}" is outside scene "${scene.id}"` });
+    markers.set(marker.id, marker.time);
+  }
+  return { ...scene, elements: scene.elements.map(element => {
+    if (typeof element.at === 'number') return { ...element, at: element.at };
+    const time = markers.get(element.at.marker);
+    if (time === undefined) ctx.addIssue({ code: 'custom', message: `unknown marker "${element.at.marker}" for element "${element.id}" in scene "${scene.id}"` });
+    return { ...element, at: (time ?? 0) + element.at.offset };
+  }) };
 });
 
 export const VideoSpec = z
@@ -148,7 +163,7 @@ export const VideoSpec = z
         for (const slot of ['enter', 'animation', 'exit'] as const)
           if (el[slot].type === 'scale' && el[slot].distance < 0)
             add(`${where}: scale distance must be non-negative`);
-        if (el.at >= scene.duration)
+        if (el.at < 0 || el.at >= scene.duration)
           add(`${where} starts at ${el.at}s but the scene is only ${scene.duration}s`);
         if (el.until !== undefined && el.until <= el.at)
           add(`${where} ends at ${el.until}s, at or before its start of ${el.at}s`);

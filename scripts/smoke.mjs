@@ -148,8 +148,9 @@ scenes:
   - id: second
     duration: 1.8
     narration: { text: Hello, volume: 0.3 }
+    markers: [{ id: word, time: 0.25 }]
     elements:
-      - { id: cue, type: text, text: Hello, at: 0.3, sound: { id: click, volume: 0.4 } }
+      - { id: cue, type: text, text: Hello, at: { marker: word, offset: 0.05 }, sound: { id: click, volume: 0.4 } }
 `);
 const take = join(cwd, 'prepared take.mp3');
 run('ffmpeg', ['-v', 'error', '-f', 'lavfi', '-i', 'sine=frequency=440:duration=0.75', '-c:a', 'libmp3lame', take]);
@@ -158,6 +159,7 @@ assert.match(call('import', spoken, '--scene', 'second', '--input', take), /atta
 assert.deepEqual(readFileSync(take), originalTake);
 assert.match(readFileSync(join(spoken, 'video.yaml'), 'utf8'), /# preserve this note/);
 assert.match(call('validate', spoken), /ok\s+spoken/);
+assert.match(call('inspect', spoken, '--scene', 'second'), /needs narration review/);
 call('render', spoken);
 const preview = call('mix', spoken, '--scene', 'second').match(/: (.+\.mp4)\s*$/)?.[1];
 assert.ok(preview, 'mix must report its output');
@@ -180,5 +182,8 @@ for (let lag = -256; lag <= 256; lag++) {
 }
 assert.ok(error < 0.15, `scene mix must match the final timeline audio (relative error ${error})`);
 assert.match(call('render', spoken), /0 rendered, 2 reused/, 'mix must leave the stitchable scene cache unchanged');
+const spokenSpec = join(spoken, 'video.yaml');
+writeFileSync(spokenSpec, readFileSync(spokenSpec, 'utf8').replace('time: 0.25', 'time: 0.45'));
+assert.match(call('render', spoken), /1 rendered, 1 reused/, 'marker changes must invalidate the consuming scene');
 assert.equal(fingerprint(pkg), before, 'rendering must not write into the installed package');
 console.log(`Packed consumer checks passed. Evidence: ${video}/output`);
