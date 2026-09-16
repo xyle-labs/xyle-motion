@@ -1,6 +1,6 @@
 // Render an unapplied take through the normal scene renderer, then add the bed.
 import { spawn } from 'node:child_process';
-import { remotionArgs, remotionCwd } from './remotion.ts';
+import { remotionArgs, remotionCwd, rendererDiagnostic } from './remotion.ts';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
@@ -17,7 +17,7 @@ async function run(command: string, args: string[]) {
     const collect = (chunk: Buffer) => { log = (log + chunk).slice(-3000); };
     child.stdout.on('data', collect); child.stderr.on('data', collect);
     child.on('error', reject);
-    child.on('close', (code) => code === 0 ? done() : reject(new Error(`Scene preview failed: ${log}`)));
+    child.on('close', (code) => code === 0 ? done() : reject(new Error(command === process.execPath ? rendererDiagnostic(log) : `Scene mix failed: ${log}`)));
   });
 }
 

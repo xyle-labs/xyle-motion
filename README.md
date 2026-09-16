@@ -118,6 +118,22 @@ and state controls. Files are embedded in render props; no package files change.
 
 ## Current boundary
 
+Create a portable local review bundle after rendering:
+
+```sh
+npm exec -- explainer review /path/to/video --note 'Draft; listening review pending.'
+```
+
+Open `output/review/index.html`. The bundle contains the rendered MP4 and an
+existing contact sheet when available, with relative links and scene navigation
+from the rendered timeline. It copies delivery artifacts without rerendering or
+including original takes/renderer props. Move the `review` folder together.
+Input/output fingerprints label stale or missing renders; an existing contact
+sheet is explicitly unverified. Review notes never imply automated listening or
+human approval. Regenerate after rendering a revision.
+
+For browser or localhost rendering failures, see [browser recovery](docs/browser-recovery.md).
+
 External video directories, local artwork and bundled assets/palettes/audio are implemented.
 Shared client asset/theme configuration and the client project pilot are next. Explicit
 narration/music paths are relative to the video directory. No cloud rendering,

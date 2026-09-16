@@ -116,6 +116,24 @@ run(process.execPath, ['--input-type=module', '-e', `
   }
 `, join(pkg, 'dist/src/audio.js'), join(cwd, 'audio check')]);
 call('contact-sheet', video, '--frames', '3'); // Current evidence after the edits above.
+const bundle = join(video, 'output', 'review');
+call('review', video, '--note', '<draft> listening pending');
+const html = readFileSync(join(bundle, 'index.html'), 'utf8');
+assert.match(html, /Current: rendered inputs/);
+assert.match(html, /data-time="3">together/);
+assert.match(html, /&lt;draft&gt; listening pending/);
+assert.ok(!html.includes(cwd), 'review page must not expose source-machine paths');
+assert.deepEqual(readdirSync(bundle).sort(), ['contact-sheet.png', 'index.html', 'video.mp4']);
+writeFileSync(specPath, readFileSync(specPath, 'utf8').replace('A clear idea, made visible.', 'A revised idea.'));
+call('review', video);
+assert.match(readFileSync(join(bundle, 'index.html'), 'utf8'), /Stale output/);
+const badBrowser = spawnSync(process.execPath, [cli, 'frame', video, '--scene', 'idea'], {
+  cwd, encoding: 'utf8', env: { ...env, XYLE_MOTION_BROWSER_EXECUTABLE: join(root, 'missing-browser') },
+});
+assert.equal(badBrowser.status, 1);
+assert.match(badBrowser.stderr, /Missing executable.*missing-browser/);
+assert.match(badBrowser.stderr, /XYLE_MOTION_BROWSER_EXECUTABLE/);
+assert.doesNotMatch(badBrowser.stderr, /\n\s+at /);
 const fresh = join(cwd, 'videos', 'fresh');
 call('new', fresh);
 assert.match(call('validate', fresh), /ok\s+fresh/);

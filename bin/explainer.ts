@@ -7,7 +7,7 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, join, relative, resolve } from 'node:path';
-import { remotionArgs as renderArgs, remotionCwd } from '../src/remotion.ts';
+import { remotionArgs as renderArgs, remotionCwd, runRemotion } from '../src/remotion.ts';
 import { PACKAGE_ROOT } from '../src/paths.ts';
 import { parseArgs } from 'node:util';
 import { parse, parseDocument } from 'yaml';
@@ -22,6 +22,7 @@ import { applyTheme, loadTheme, type Palette } from '../src/theme.ts';
 import { startRecordingStudio } from '../src/recording.ts';
 import { importRecording } from '../src/import-recording.ts';
 import { renderRecordingPreview } from '../src/recording-preview.ts';
+import { createReview, renderIdentity, saveRenderManifest } from '../src/review.ts';
 
 const USAGE = `usage:
   explainer new           <video-directory>
@@ -32,6 +33,7 @@ const USAGE = `usage:
   explainer import        <video-directory> --scene id --input take.mp3  decode only
   explainer mix           <video-directory> --scene id   final timeline music + voice/effects
   explainer record        <video-directory> [--port 4318] teleprompter and voice studio
+  explainer review        <video-directory> [--note text] portable review bundle
   explainer preview       <video-directory> [--scene id]
   explainer frame         <video-directory> [--scene id] [--time seconds]
   explainer contact-sheet <video-directory> [--frames n] every scene on one page
@@ -50,6 +52,7 @@ function argumentsFromCli() {
     frames: { type: 'string' },
     input: { type: 'string' },
     port: { type: 'string' },
+    note: { type: 'string' },
   },
   }); } catch (error) { return die(`${(error as Error).message}\n${USAGE}`); }
 }
@@ -58,7 +61,7 @@ if (values.help) { console.log(USAGE); process.exit(0); }
 const [command, target] = positionals;
 const project = target ? basename(resolve(target)) : '';
 if (!command || !target) die(USAGE);
-if (!['new', 'inspect', 'validate', 'assets', 'enhance', 'import', 'mix', 'record', 'preview', 'frame', 'contact-sheet', 'render'].includes(command)) die(USAGE);
+if (!['new', 'inspect', 'validate', 'assets', 'enhance', 'import', 'mix', 'review', 'record', 'preview', 'frame', 'contact-sheet', 'render'].includes(command)) die(USAGE);
 
 const dir = resolve(target);
 const outDir = join(dir, 'output');
@@ -98,6 +101,18 @@ if (command === 'mix') {
       console.log(`script awaiting recording (silent): ${scene.id}`);
     console.log(`scene mix (${loaded.video.music ? 'music + attached narration/effects' : 'no music configured; attached narration/effects'}): ${result.output}`);
   } catch (error) { die((error as Error).message); }
+  process.exit(0);
+}
+
+if (command === 'review') {
+  let identity: string | undefined;
+  try {
+    const resolved = resolveAssets(loaded, undefined, dir);
+    const sound = resolveAudio(loaded, dir);
+    if (!resolved.errors.length && !sound.errors.length)
+      identity = renderIdentity(loaded, dir, resolved.assets, palette, sound.audio);
+  } catch { /* The review page labels inputs it cannot verify. */ }
+  console.log(createReview(dir, loaded, identity, values.note));
   process.exit(0);
 }
 
@@ -185,9 +200,7 @@ writeFileSync(propsFile, JSON.stringify({ spec, assets, palette, audio, perScene
 
 if (command === 'render' && !values.scene) renderByScene();
 
-process.exit(
-  spawnSync(process.execPath, renderArgs(remotionArgs()), { stdio: 'inherit', cwd: remotionCwd() }).status ?? 1,
-);
+process.exit(runRemotion(remotionArgs()));
 
 /** Render each scene once, keyed by everything that affects its pixels, then
  *  stitch. ffmpeg comes with Remotion, so this adds no dependency. */
@@ -210,14 +223,12 @@ function renderByScene(): never {
         scenePropsFile,
         JSON.stringify({ spec: { ...spec, scenes: [scene] }, assets, palette, audio }),
       );
-      const rendered = spawnSync(
-        process.execPath,
+      const rendered = runRemotion(
         // Every part needs an audio stream or the concat refuses to splice a
         // silent scene onto a narrated one.
-        renderArgs(['render', 'Video', part, `--props=${scenePropsFile}`, '--enforce-audio-track']),
-        { stdio: 'inherit', cwd: remotionCwd() },
+        ['render', 'Video', part, `--props=${scenePropsFile}`, '--enforce-audio-track'],
       );
-      if (rendered.status !== 0) die(rendered.error?.message ?? `Scene render failed (${rendered.status})`);
+      if (rendered !== 0) die('Scene render failed; see the renderer diagnostic above.');
     }
     parts.push(part);
     prune(cacheDir, scene.id, key);
@@ -272,7 +283,7 @@ function renderByScene(): never {
     );
     if (mixed.status !== 0) die(mixed.error?.message ?? `Music mix failed (${mixed.status})`);
   }
-  writeFileSync(join(outDir, 'render-manifest.json'), JSON.stringify({ spec }));
+  saveRenderManifest(dir, spec, output, renderIdentity(spec, dir, assets, palette, audio));
   console.log(
     `${spec.scenes.length - reused} rendered, ${reused} reused  ->  ${output}`,
   );
