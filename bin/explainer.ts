@@ -20,6 +20,8 @@ import { resolveAssets, scan } from '../src/library.ts';
 import { VideoSpec } from '../src/schema.ts';
 import { applyTheme, loadTheme, type Palette } from '../src/theme.ts';
 import { startRecordingStudio } from '../src/recording.ts';
+import { importRecording } from '../src/import-recording.ts';
+import { renderRecordingPreview } from '../src/recording-preview.ts';
 
 const USAGE = `usage:
   explainer new           <video-directory>
@@ -27,28 +29,36 @@ const USAGE = `usage:
   explainer validate      <video-directory>
   explainer assets        <video-directory>              library contents, * = used here
   explainer enhance       <video-directory> --scene id --input recording.m4a
+  explainer import        <video-directory> --scene id --input take.mp3  decode only
+  explainer mix           <video-directory> --scene id   final timeline music + voice/effects
   explainer record        <video-directory> [--port 4318] teleprompter and voice studio
   explainer preview       <video-directory> [--scene id]
   explainer frame         <video-directory> [--scene id] [--time seconds]
   explainer contact-sheet <video-directory> [--frames n] every scene on one page
   explainer render        <video-directory> [--scene id]  unchanged scenes are reused
 
---scene narrows the whole spec to one scene, so times are then relative to it.`;
+--help, -h prints this help. --scene times are relative to the selected scene.
+preview and render --scene omit the music bed; use mix for scene audio review.`;
 
-const { values, positionals } = parseArgs({
+function argumentsFromCli() {
+  try { return parseArgs({
   allowPositionals: true,
   options: {
+    help: { type: 'boolean', short: 'h' },
     scene: { type: 'string' },
     time: { type: 'string' },
     frames: { type: 'string' },
     input: { type: 'string' },
     port: { type: 'string' },
   },
-});
+  }); } catch (error) { return die(`${(error as Error).message}\n${USAGE}`); }
+}
+const { values, positionals } = argumentsFromCli();
+if (values.help) { console.log(USAGE); process.exit(0); }
 const [command, target] = positionals;
 const project = target ? basename(resolve(target)) : '';
 if (!command || !target) die(USAGE);
-if (!['new', 'inspect', 'validate', 'assets', 'enhance', 'record', 'preview', 'frame', 'contact-sheet', 'render'].includes(command)) die(USAGE);
+if (!['new', 'inspect', 'validate', 'assets', 'enhance', 'import', 'mix', 'record', 'preview', 'frame', 'contact-sheet', 'render'].includes(command)) die(USAGE);
 
 const dir = resolve(target);
 const outDir = join(dir, 'output');
@@ -70,6 +80,27 @@ next:  explainer validate ${JSON.stringify(dir)}`);
 let palette: Palette = {};
 const loaded = loadSpec(join(dir, 'video.yaml'));
 
+if (command === 'import') {
+  if (!values.scene || !values.input) die('import needs --scene id --input recording.wav (or MP3/M4A/OGG/WebM)');
+  try {
+    const result = importRecording(dir, values.scene, resolve(values.input));
+    console.log(`attached ${result.seconds.toFixed(2)}s decoded narration to ${values.scene}: ${result.file}`);
+  } catch (error) { die((error as Error).message); }
+  process.exit(0);
+}
+
+if (command === 'mix') {
+  if (!values.scene) die('mix needs --scene id');
+  try {
+    const result = await renderRecordingPreview(dir, loaded, values.scene);
+    const scene = loaded.scenes.find(scene => scene.id === values.scene)!;
+    if (scene.narration && !scene.narration.audio)
+      console.log(`script awaiting recording (silent): ${scene.id}`);
+    console.log(`scene mix (${loaded.video.music ? 'music + attached narration/effects' : 'no music configured; attached narration/effects'}): ${result.output}`);
+  } catch (error) { die((error as Error).message); }
+  process.exit(0);
+}
+
 if (command === 'record') {
   if (values.scene) die('record opens the whole project; choose a scene in the studio');
   const port = Number(values.port ?? 4318);
@@ -85,6 +116,9 @@ if (command === 'record') {
 const spec = values.scene
   ? { ...loaded, scenes: keepScene(loaded, values.scene) }
   : loaded;
+
+if (loaded.video.music && (command === 'preview' || (command === 'render' && values.scene)))
+  console.log('Music bed omitted from this preview. Use mix --scene for the final timeline balance.');
 
 // Asset references are checked here rather than in the Zod schema: the schema
 // also runs in the browser, where there is no library to look at.
@@ -207,7 +241,14 @@ function renderByScene(): never {
 
   const joined = spawnSync(
     process.execPath,
-    renderArgs(['ffmpeg', '-f', 'concat', '-safe', '0', '-i', list, '-c', 'copy', '-y', stitched]),
+    renderArgs(['ffmpeg', '-f', 'concat', '-safe', '0', '-i', list,
+      ...parts.flatMap(part => ['-i', part]),
+      // AAC parts include encoder padding. Trim decoded audio before joining;
+      // stream-copying their packets shifts later narration/effects off the video.
+      '-filter_complex', spec.scenes.map((scene, i) =>
+        `[${i + 1}:a]atrim=duration=${scene.duration},asetpts=PTS-STARTPTS[a${i}]`).join(';') +
+        `;${parts.map((_, i) => `[a${i}]`).join('')}concat=n=${parts.length}:v=0:a=1[voice]`,
+      '-map', '0:v', '-map', '[voice]', '-c:v', 'copy', '-c:a', 'aac', '-y', stitched]),
     { stdio: ['inherit', 'inherit', 'inherit'], cwd: remotionCwd() },
   );
   if (joined.status !== 0) die(joined.error?.message ?? `Stitch failed (${joined.status})`);

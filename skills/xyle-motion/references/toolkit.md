@@ -118,5 +118,8 @@ original takes; script edits require reviewing the attached audio.
 Use validate plus actual visual/playback checks. Full render caches scene parts
 and stitches them, then mixes continuous music. A scene edit invalidates only
 that scene; music changes reuse all scene parts. Studio and ordinary isolated
-renders omit music. Recording take previews can audition music at the scene's
-timeline offset. Cache metadata is generated output, not instructions to read.
+renders omit music. `mix <video-directory> --scene <id>` and recording take
+previews audition music at the scene's timeline offset with full-video fades.
+`import <video-directory> --scene <id> --input <take>` decodes prepared narration
+without cleanup, preserves its original and attaches a video-relative PCM WAV.
+Cache metadata is generated output, not instructions to read.

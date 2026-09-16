@@ -22,6 +22,9 @@ Check at phone viewing size as well as a full-resolution frame:
   line breaks, overlaps, edge clipping and space needed by motion.
 - Do objects share perspective, line weight and detail level? Does the subject
   remain legible in the actual palette, including scene overrides?
+- For cutouts, composite the image over two contrasting solid backgrounds and
+  inspect its alpha channel. A painted checkerboard is opaque artwork, not
+  transparency; check edges for halos before approving the generated asset.
 
 Inspect motion near arrival, the settled hold, the important action and exit.
 Check repeated entrances finish in time and groups keep labels with subjects.
@@ -46,8 +49,9 @@ an upbeat one may suit daybreak. The current starter is a default, not a mandate
 
 Use a cue to explain an event: `paper-turn` for a document change, `wood-tap` or
 `soft-land` for an object arriving, `click` for a switch, `sparkle` or `chime` for
-a discovery/resolution. Aim around four or five content cues per minute plus
-the opening signature; adjust to the actual story. Never add one cue per copy
+a discovery/resolution. Set cue density from the story: a short comparison may
+need several coordinated subject changes, while a reflective explanation may
+need very few. There is no effect quota. Never add one cue per copy
 in a repeated grid. Leave breathing room around important words.
 
 Preserve any approved client opening and its cues. Reuse existing
@@ -71,8 +75,9 @@ Choose `T` from the element's timing; `frame` defaults to time zero, often an
 empty entrance. Three sheet samples are interior moments, not exact event
 boundaries. Render event-specific frames when the action falls between them.
 
-Studio and isolated scene renders omit background music. Final mix review needs
-the full stitched video. A full render after a music-only edit should reuse
+Studio and ordinary isolated scene renders omit background music. Use
+`mix <project> --scene S` for a scene with the final timeline bed, then review
+the full stitched video before delivery. A music-only edit should reuse
 scene parts; do not bypass the cache or regenerate effects to audition a bed.
 
 Open the actual produced artifact. An existing filename is not proof that it

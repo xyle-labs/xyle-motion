@@ -68,9 +68,24 @@ cleanup, trims, pitch controls and local previews are retained. Optional
 OpenVoice/LavaSR conversion is unavailable; its experimental Python workflow
 has been retired. No audio is uploaded. Text without a take is silent.
 
-Studio/ordinary scene renders omit the music bed. Full stitched renders include
-it; processed-take previews in the recording studio also audition the bed at
-the appropriate timeline offset. Inspect real playback and listen before delivery.
+Import prepared narration without cleanup or normalization:
+
+```sh
+npm exec -- explainer import /path/to/video --scene intro --input /path/to/take.mp3
+npm exec -- explainer mix /path/to/video --scene intro
+```
+
+`import` preserves the original, writes a 48 kHz mono PCM WAV under the video's
+`recordings/imports/`, and attaches it while retaining YAML comments. Missing
+scenes, invalid recordings and takes longer than the scene leave YAML unchanged.
+It never changes speech pace or scene duration. `enhance` remains the cleanup command.
+
+`mix` renders a cached scene preview with attached narration, effects and the
+configured bed at its global timeline offset and full-video fades. Preview files
+live in `output/previews/`; scene parts remain free of music for full stitching.
+Studio/ordinary scene renders omit the music bed. Use `mix`, the recording
+studio's processed-take preview, or the full export to review the balance.
+Inspect real playback and listen before delivery. `explainer --help` lists commands.
 
 ## Project artwork
 

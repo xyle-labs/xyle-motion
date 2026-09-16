@@ -68,6 +68,20 @@ export function encodeWav(samples: Int16Array, rate: number, channels = 1): Buff
   return Buffer.concat([header, data]);
 }
 
+/** Decode only: no cleanup, gain, trim, pitch or tempo changes. */
+export function decodeRecording(input: string, output: string, limit?: number): number {
+  const decoded = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-nostdin',
+    '-protocol_whitelist', 'file,pipe', '-i', input, '-vn',
+    ...(limit === undefined ? [] : ['-t', String(limit)]),
+    '-ar', '48000', '-ac', '1', '-c:a', 'pcm_s16le', output], { encoding: 'utf8', timeout: 120_000 });
+  if (decoded.error || decoded.status !== 0)
+    throw new Error(`Could not decode the take. Full ffmpeg must be installed. ${decoded.error?.message ?? decoded.stderr.slice(-500)}`);
+  const seconds = wavSeconds(output);
+  if (!seconds || (limit !== undefined && seconds >= limit))
+    throw new Error('Recording is empty or exceeds the supported duration. Original file preserved.');
+  return seconds;
+}
+
 /** Inline every sound and narration line the spec references, and report what
  *  is wrong with the references. Audio travels as data URIs for the same reason
  *  the SVGs do: the renderer stays a pure function of its props. */
@@ -106,7 +120,7 @@ export function resolveAudio(spec: VideoSpec, project: string) {
     const spoken = readFileSync(path);
     const seconds = wavSeconds(spoken);
     if (seconds === undefined || seconds <= 0) {
-      errors.push(`scene "${scene.id}": narration must be a valid PCM WAV; use explainer enhance`);
+      errors.push(`scene "${scene.id}": narration must be a valid PCM WAV; use explainer import or enhance`);
       continue;
     }
     audio[`narration:${scene.id}`] = dataUri(spoken);

@@ -39,6 +39,11 @@ const video = join(cwd, 'videos', 'demo');
 mkdirSync(join(cwd, 'videos'));
 cpSync(join(pkg, 'examples/minimal'), video, { recursive: true });
 const call = (...args) => run(process.execPath, [cli, ...args]);
+assert.match(call('--help'), /usage:/);
+assert.match(call('-h'), /decode only/);
+const invalid = spawnSync(process.execPath, [cli, '--unknown'], { cwd, env, encoding: 'utf8' });
+assert.equal(invalid.status, 1);
+assert.doesNotMatch(invalid.stderr, /\n\s+at |ERR_PARSE_ARGS/);
 assert.match(call('validate', video), /ok\s+minimal/);
 assert.match(call('inspect', video, '--scene', 'idea'), /An idea, made visible/);
 assert.match(call('assets', video), /household.lightbulb/);
@@ -114,5 +119,48 @@ call('contact-sheet', video, '--frames', '3'); // Current evidence after the edi
 const fresh = join(cwd, 'videos', 'fresh');
 call('new', fresh);
 assert.match(call('validate', fresh), /ok\s+fresh/);
+// Decode-only import and scene mix parity, using synthetic narration.
+const spoken = join(cwd, 'videos', 'spoken');
+mkdirSync(spoken);
+writeFileSync(join(spoken, 'video.yaml'), `# preserve this note
+version: 1
+video: { id: spoken, width: 320, height: 240, fps: 10, music: { file: daybreak, volume: 0.35 } }
+scenes:
+  - { id: first, duration: 1.2, elements: [] }
+  - id: second
+    duration: 1.8
+    narration: { text: Hello, volume: 0.3 }
+    elements:
+      - { id: cue, type: text, text: Hello, at: 0.3, sound: { id: click, volume: 0.4 } }
+`);
+const take = join(cwd, 'prepared take.mp3');
+run('ffmpeg', ['-v', 'error', '-f', 'lavfi', '-i', 'sine=frequency=440:duration=0.75', '-c:a', 'libmp3lame', take]);
+const originalTake = readFileSync(take);
+assert.match(call('import', spoken, '--scene', 'second', '--input', take), /attached 0.75s decoded narration/);
+assert.deepEqual(readFileSync(take), originalTake);
+assert.match(readFileSync(join(spoken, 'video.yaml'), 'utf8'), /# preserve this note/);
+assert.match(call('validate', spoken), /ok\s+spoken/);
+call('render', spoken);
+const preview = call('mix', spoken, '--scene', 'second').match(/: (.+\.mp4)\s*$/)?.[1];
+assert.ok(preview, 'mix must report its output');
+const samples = (file, offset) => {
+  const decoded = spawnSync('ffmpeg', ['-v', 'error', '-i', file, '-ss', String(offset), '-t', '1.8', '-f', 'f32le', '-ar', '8000', '-ac', '1', 'pipe:1']);
+  assert.equal(decoded.status, 0, decoded.stderr?.toString());
+  return Array.from({ length: decoded.stdout.length / 4 }, (_, i) => decoded.stdout.readFloatLE(i * 4));
+};
+const fullAudio = samples(join(spoken, 'output', 'spoken.mp4'), 1.2);
+const previewAudio = samples(preview, 0);
+// AAC packet boundaries may shift decoded samples slightly; compare aligned interiors.
+let error = Infinity;
+for (let lag = -256; lag <= 256; lag++) {
+  let difference = 0, energy = 0;
+  for (let i = 800; i < Math.min(fullAudio.length, previewAudio.length) - 800; i++) {
+    difference += (fullAudio[i] - previewAudio[i + lag]) ** 2;
+    energy += fullAudio[i] ** 2;
+  }
+  error = Math.min(error, difference / energy);
+}
+assert.ok(error < 0.15, `scene mix must match the final timeline audio (relative error ${error})`);
+assert.match(call('render', spoken), /0 rendered, 2 reused/, 'mix must leave the stitchable scene cache unchanged');
 assert.equal(fingerprint(pkg), before, 'rendering must not write into the installed package');
 console.log(`Packed consumer checks passed. Evidence: ${video}/output`);
