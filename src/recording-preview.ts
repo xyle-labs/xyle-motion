@@ -21,11 +21,11 @@ async function run(command: string, args: string[]) {
   });
 }
 
-export async function renderRecordingPreview(directory: string, spec: VideoSpec, sceneId: string, processed: { file: string; duration: number }) {
+export async function renderRecordingPreview(directory: string, spec: VideoSpec, sceneId: string, processed?: { file: string; duration: number }) {
   const index = spec.scenes.findIndex((s) => s.id === sceneId);
   if (index < 0) throw new Error('Preview scene is missing.');
   const original = spec.scenes[index];
-  const scene = { ...original, duration: processed.duration, narration: { ...original.narration!, audio: processed.file } };
+  const scene = processed ? { ...original, duration: processed.duration, narration: { ...original.narration!, audio: processed.file } } : original;
   const previewSpec = { ...spec, scenes: [scene] };
   const project = directory;
   const { assets, errors } = resolveAssets(previewSpec, undefined, project);
@@ -41,9 +41,9 @@ export async function renderRecordingPreview(directory: string, spec: VideoSpec,
     .update(readFileSync(new URL(import.meta.url)))
     .update(musicMixFilter(music?.volume ?? 0, duration, offset))
     .update(track ? readFileSync(track) : '').digest('hex').slice(0, 24);
-  const cache = join(directory, 'recordings', 'previews');
+  const cache = join(directory, processed ? 'recordings' : 'output', 'previews');
   const output = join(cache, `${key}.mp4`);
-  if (existsSync(output)) return { key, duration: scene.duration };
+  if (existsSync(output)) return { key, duration: scene.duration, output };
   mkdirSync(cache, { recursive: true });
   const propsFile = join(cache, `${key}.json`);
   const rendered = join(cache, `${key}.scene.mp4`);
@@ -59,7 +59,7 @@ export async function renderRecordingPreview(directory: string, spec: VideoSpec,
         '-t', String(scene.duration), '-movflags', '+faststart', '-y', mixed]);
       renameSync(mixed, output);
     } else renameSync(rendered, output);
-    return { key, duration: scene.duration };
+    return { key, duration: scene.duration, output };
   } finally {
     for (const file of [propsFile, rendered, mixed]) rmSync(file, { force: true });
   }

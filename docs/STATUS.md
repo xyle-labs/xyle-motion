@@ -9,16 +9,21 @@ Implemented: compiled npm package; explicit external video directories; bundled
 SVG/theme/audio resolution; video-relative PNG/WebP/SVG artwork; isolated
 renderer/browser caches; portable basic recording studio; scene inspection;
 neutral example; self-contained skill.
+Decode-only narration import, cached scene mixes with the final timeline bed,
+CLI help, and short comparison-reel recording handoffs are implemented.
 The existing deterministic renderer and scene cache are retained.
 
-Validation: 59 logic and recording checks, plus the skill context check. The
+Validation: 61 logic and recording checks, plus the skill context check. The
 packed-package smoke test installs into an unrelated directory with spaces and
 an apostrophe, ignores a deliberately failing host Remotion config, renders
 frames/a sheet/a six-second MP4, checks unchanged/one-scene/music-only cache
 behavior, decodes local PNG/WebP/SVG artwork with proportion and transparency
 assertions, checks image-byte edits invalidate only consuming scenes,
 exercises gentle and RNNoise cleanup, and verifies the installed
-package is unchanged. The browser's initial download was also exercised.
+package is unchanged. It also imports synthetic MP3 narration without modifying
+the original and compares scene mix audio with the full export. Decoded scene
+audio is trimmed before stitching so AAC padding cannot shift later takes.
+The browser's initial download was also exercised.
 A contact sheet was visually inspected; MP4 streams and duration were probed.
 Full human listening/playback review remains outstanding.
 
