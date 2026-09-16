@@ -104,6 +104,30 @@ invalidates only affected scene caches when file bytes change.
 
 ## Commands and audio
 
+### Narration timing markers
+
+Use scene-local manual markers for word arrivals; numeric `at` remains supported:
+
+```yaml
+markers:
+  - { id: second-phrase, time: 1.2 }
+elements:
+  - id: word
+    type: text
+    text: Try it
+    at: { marker: second-phrase, offset: 0.1 }
+    sound: { id: click, at: 0 }
+```
+
+Moving `second-phrase` moves the card and its attached effect. Marker names must
+be unique in their scene; unknown references and times outside it fail validation.
+`inspect` reports resolved arrival/effect times and the current narration's
+`narrationFingerprint`. After listening and adjusting the markers for that take,
+copy that fingerprint into the scene's `markersAudio`. A missing or changed
+fingerprint produces “needs narration review” in inspection and validation,
+even when the audio filename stays the same. No speech alignment is inferred
+and no recordings are uploaded. Marker edits invalidate the consuming scene.
+
 Use `npm exec -- explainer <command> <video-directory>` from the host project.
 All paths to narration and explicit music files are relative to that video.
 Bundled SVGs, music and effects are read from the installed package. Run assets

@@ -90,6 +90,7 @@ export function resolveAudio(spec: VideoSpec, project: string) {
   const audio: Record<string, string> = {};
   const errors: string[] = [];
   const unrecorded: string[] = [];
+  const markerReviews: string[] = [];
 
   for (const scene of spec.scenes) {
     for (const element of scene.elements) {
@@ -107,6 +108,9 @@ export function resolveAudio(spec: VideoSpec, project: string) {
     }
 
     const narration = scene.narration;
+    const markerAudio = scene.markers.length && narration?.audio && existsSync(join(project, narration.audio))
+      ? createHash('sha256').update(readFileSync(join(project, narration.audio))).digest('hex') : undefined;
+    if (scene.markers.length && (!markerAudio || scene.markersAudio !== markerAudio)) markerReviews.push(scene.id);
     if (!narration) continue;
     if (!narration.audio) {
       unrecorded.push(scene.id);
@@ -131,7 +135,7 @@ export function resolveAudio(spec: VideoSpec, project: string) {
       );
   }
 
-  return { audio, errors, unrecorded };
+  return { audio, errors, unrecorded, markerReviews };
 }
 
 /** Gentle rumble/hiss reduction and level control; no generated speech or

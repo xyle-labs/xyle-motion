@@ -1,4 +1,4 @@
-# Development status — 15 September 2026
+# Development status — 16 September 2026
 
 Xyle Motion: package `@xyle-labs/motion`, command `explainer`, skill `$xyle-motion`.
 The repository is public by owner request. Original source and assets use MIT;
@@ -11,9 +11,11 @@ renderer/browser caches; portable basic recording studio; scene inspection;
 neutral example; self-contained skill.
 Decode-only narration import, cached scene mixes with the final timeline bed,
 CLI help, and short comparison-reel recording handoffs are implemented.
+Portable delivery-only review bundles identify stale exports; renderer diagnostics
+cover browser/cache recovery without automatically replacing a selected browser.
 The existing deterministic renderer and scene cache are retained.
 
-Validation: 61 logic and recording checks, plus the skill context check. The
+Validation includes logic and recording checks plus the skill context check. The
 packed-package smoke test installs into an unrelated directory with spaces and
 an apostrophe, ignores a deliberately failing host Remotion config, renders
 frames/a sheet/a six-second MP4, checks unchanged/one-scene/music-only cache
@@ -23,6 +25,8 @@ exercises gentle and RNNoise cleanup, and verifies the installed
 package is unchanged. It also imports synthetic MP3 narration without modifying
 the original and compares scene mix audio with the full export. Decoded scene
 audio is trimmed before stitching so AAC padding cannot shift later takes.
+Named narration markers resolve card/effect arrivals and flag changed takes
+for review.
 The browser's initial download was also exercised.
 A contact sheet was visually inspected; MP4 streams and duration were probed.
 Full human listening/playback review remains outstanding.
