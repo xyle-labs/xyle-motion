@@ -57,7 +57,8 @@ another provider account. It reads only relevant project context and scene YAML.
 ## Commands
 
 `new`, `inspect`, `assets`, `validate`, `preview`, `frame`, `contact-sheet`,
-`record`, `enhance`, and `render` all accept an explicit video directory.
+`record`, `enhance`, `import`, `mix`, `review`, and `render` all accept an explicit
+video directory.
 Use `--scene <id>` for isolated changes and `--time <seconds>` for a frame.
 Scene IDs must start with an ASCII letter or digit and contain only ASCII
 letters, digits, underscores or hyphens (for example, `intro` or `scene-2`).
@@ -161,6 +162,6 @@ node scripts/smoke.mjs /absolute/path/to/package.tgz
 These settings are optional. The renderer uses its own dependencies and an
 explicit empty configuration, rather than the host project's Remotion config.
 
-See [the extraction plan](docs/portable-toolkit-plan.md).
+See the [current status](docs/STATUS.md) and [implementation plan](docs/portable-toolkit-plan.md).
 
 Contributions go through pull requests. See [CONTRIBUTING.md](CONTRIBUTING.md).

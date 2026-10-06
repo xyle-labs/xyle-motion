@@ -1,43 +1,47 @@
-# Development status — 16 September 2026
+# Development status — 6 October 2026
 
-Xyle Motion: package `@xyle-labs/motion`, command `explainer`, skill `$xyle-motion`.
-The repository is public by owner request. Original source and assets use MIT;
-third-party terms and the pinned dependency review are in NOTICE.md and
-docs/licensing.md. The npm package remains private pending publication review.
+Xyle Motion is a public development preview: one `@xyle-labs/motion` package,
+the `explainer` CLI and the `$xyle-motion` skill. `package.json` remains
+`private: true`; npm publication awaits review of the exact release contents.
+Original source and assets use MIT, with third-party exceptions in [NOTICE.md](../NOTICE.md)
+and [licensing.md](licensing.md).
 
-Implemented: compiled npm package; explicit external video directories; bundled
-SVG/theme/audio resolution; video-relative PNG/WebP/SVG artwork; isolated
-renderer/browser caches; portable basic recording studio; scene inspection;
-neutral example; self-contained skill.
-Decode-only narration import, cached scene mixes with the final timeline bed,
-CLI help, and short comparison-reel recording handoffs are implemented.
-Portable delivery-only review bundles identify stale exports; renderer diagnostics
-cover browser/cache recovery without automatically replacing a selected browser.
-The existing deterministic renderer and scene cache are retained.
+## Implemented on `main`
 
-Validation includes logic and recording checks plus the skill context check. The
-packed-package smoke test installs into an unrelated directory with spaces and
-an apostrophe, ignores a deliberately failing host Remotion config, renders
-frames/a sheet/a six-second MP4, checks unchanged/one-scene/music-only cache
-behavior, decodes local PNG/WebP/SVG artwork with proportion and transparency
-assertions, checks image-byte edits invalidate only consuming scenes,
-exercises gentle and RNNoise cleanup, and verifies the installed
-package is unchanged. It also imports synthetic MP3 narration without modifying
-the original and compares scene mix audio with the full export. Decoded scene
-audio is trimmed before stitching so AAC padding cannot shift later takes.
-Named narration markers resolve card/effect arrivals and flag changed takes
-for review.
-The browser's initial download was also exercised.
-A contact sheet was visually inspected; MP4 streams and duration were probed.
-Full human listening/playback review remains outstanding.
+- An installed, compiled package using explicit external video directories,
+  bundled SVGs/themes/audio, isolated renderer/browser caches, a deterministic
+  renderer and scene cache, scene inspection, and a neutral example.
+- Video-relative PNG/WebP/SVG artwork; local recording with gentle/RNNoise
+  cleanup; decode-only narration import; scene mixes with the final timeline
+  music bed; editable narration timing markers; portable review bundles; and
+  browser recovery diagnostics.
+- A portable skill and development checks. The required `security` workflow
+  runs the history scan, logic tests, build and skill context test on Ubuntu.
+  CodeQL also runs. The installed-tarball render smoke has been exercised
+  locally, including external paths, artwork, narration, cache behavior and an
+  unchanged installed package. Prior frame/contact-sheet inspection and MP4
+  probing are recorded; full human playback/listening review remains open.
 
-Next: shared project asset/theme roots and workspace creation defaults; the client project pilot;
-Linux render CI and publication review. Experimental neural tooling and its
-Python dependency pins are retired; existing local cleanup and native recording
-remain. Scene IDs are validated before they can become export/cache filenames.
-The current artwork is suitable for engine validation, not a finished brand kit.
+Experimental OpenVoice/LavaSR helpers and Python dependency pins were retired.
+Neural restoration and speaker conversion are unavailable. Scene IDs are
+validated before use as cache/export filenames. The generic artwork supports
+engine validation; it is not a finished brand kit.
 
-Extraction used the current working toolkit files, including uncommitted work,
-rather than exporting its older HEAD alone. Client projects, recordings,
-identity logos, credentials, model weights and old Git history were excluded.
-The original repository and its videos were not modified during extraction.
+## Remaining work, in order
+
+1. [#35](https://github.com/xyle-labs/xyle-motion/issues/35): shared project
+   asset/theme roots and creation defaults. Video-relative artwork already works;
+   the planned `explainer.yaml` and `--config` interface do not yet exist.
+2. [#36](https://github.com/xyle-labs/xyle-motion/issues/36): an installed-package
+   client project pilot, preserving originals and checking actual playback.
+3. [#37](https://github.com/xyle-labs/xyle-motion/issues/37): Linux CI for the
+   installed-tarball render smoke. Current Ubuntu CI checks do not render video.
+4. [#38](https://github.com/xyle-labs/xyle-motion/issues/38): exact-tree, tarball,
+   license/media and publication review. Keep npm publication disabled until
+   release contents are approved.
+
+Optional [#17](https://github.com/xyle-labs/xyle-motion/issues/17) music ducking
+has a [draft PR #29](https://github.com/xyle-labs/xyle-motion/pull/29) with
+automated checks; its requested listening review is still outstanding. The
+[implementation plan](portable-toolkit-plan.md) gives the milestone acceptance
+details. GitHub issues track the remaining execution work.
