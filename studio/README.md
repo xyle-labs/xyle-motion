@@ -4,10 +4,10 @@ Use gentle cleanup, RNNoise suppression, and pitch/tone controls for local
 voice processing. The experimental OpenVoice/LavaSR workflow has been retired;
 see its [status](NEURAL-VOICE.md).
 
-Start from the repository root:
+Start from the consuming project with an explicit video directory:
 
 ```sh
-npm run explainer record /path/to/video-directory
+npm exec -- explainer record /path/to/video-directory
 ```
 
 Open the printed local address in Chrome or Safari. Keep the terminal running.
@@ -51,8 +51,8 @@ The browser only requests the microphone when you press Record, and releases it
 when you stop. Your browser's selected/default microphone is used. All processing
 stays on this computer. The bundled denoising model requires no runtime
 download, account, GPU, Python or API key. No cloud AI services are used.
-Original files and take metadata are stored under
-`videos/<project>/recordings/takes/`; processed WAVs go in `recordings/enhanced/`.
+Original files and take metadata are stored under the video's
+`recordings/takes/`; processed WAVs go in its `recordings/enhanced/`.
 Back up the recordings alongside the project. Reopening the studio restores takes.
 Only **Use in video** updates the YAML; recording and previewing leave it untouched.
 If the script or project changes, create a fresh preview before attaching a take.

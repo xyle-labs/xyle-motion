@@ -1,7 +1,9 @@
 # Dependency license review
 
-Reviewed 15 September 2026 against `package-lock.json`, installed license files,
-the package file list and upstream terms. MIT is a suitable permissive license
+This dependency inventory reflects the pins on `main` as of 16 September 2026.
+The original license review used `package-lock.json`, installed license files,
+the package file list and upstream terms. Recheck changed dependencies and the
+exact release artifact before publication. MIT is a suitable permissive license
 for Xyle Motion's original work; dependencies do not select a unique license for
 the project. MIT allows commercial use, modification and redistribution while
 requiring preservation of its copyright and permission notice.
