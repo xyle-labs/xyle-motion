@@ -14,8 +14,8 @@ mkdirSync(cwd);
 writeFileSync(join(cwd, 'package.json'), '{"name":"consumer-smoke","private":true}\n');
 writeFileSync(join(cwd, 'remotion.config.js'), 'throw new Error("Host config must not be loaded");\n');
 const env = { ...process.env, XYLE_MOTION_CACHE: process.env.XYLE_MOTION_CACHE ?? join(root, 'runtime') };
-const run = (command, args) => {
-  const result = spawnSync(command, args, { cwd, env, encoding: 'utf8', timeout: 240_000, maxBuffer: 4 * 1024 * 1024 });
+const run = (command, args, directory = cwd) => {
+  const result = spawnSync(command, args, { cwd: directory, env, encoding: 'utf8', timeout: 240_000, maxBuffer: 4 * 1024 * 1024 });
   assert.equal(result.status, 0, `${command} ${args.join(' ')}\n${result.error ?? ''}\n${result.stderr}\n${result.stdout.slice(-5000)}`);
   return result.stdout;
 };
@@ -137,6 +137,55 @@ assert.doesNotMatch(badBrowser.stderr, /\n\s+at /);
 const fresh = join(cwd, 'videos', 'fresh');
 call('new', fresh);
 assert.match(call('validate', fresh), /ok\s+fresh/);
+// Two independent installed consumers, each with its own config, art and theme.
+const second = join(root, 'another client');
+mkdirSync(second);
+writeFileSync(join(second, 'package.json'), '{"name":"other-consumer","private":true}\n');
+run('npm', ['install', '--no-audit', '--no-fund', resolve(tarball)], second);
+const cli2 = join(second, 'node_modules/@xyle-labs/motion/dist/bin/explainer.js');
+const call2 = (...args) => run(process.execPath, [cli2, ...args], second);
+for (const [home, callInstalled, name] of [[cwd, call, 'alpha'], [second, call2, 'beta']]) {
+  const base = join(home, `project ${name}`);
+  const videos = join(base, 'videos');
+  const shared = join(base, 'shared');
+  const themes = join(base, 'themes');
+  mkdirSync(videos, { recursive: true });
+  mkdirSync(shared);
+  mkdirSync(themes);
+  writeFileSync(join(shared, `${name}.svg`), '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 40"><rect width="80" height="40" fill="#00ff00"/></svg>');
+  writeFileSync(join(themes, `${name}.yaml`), 'colors: { background: "#0000ff", text: "#ffffff" }\n');
+  writeFileSync(join(base, 'guide.md'), '# Local only\n');
+  writeFileSync(join(videos, 'explainer.yaml'), `assetRoots: [../shared]\nthemeRoots: [../themes]\ncontext: [../guide.md]\ndefaults: { theme: ${name}, width: 320, height: 240, fps: 10 }\n`);
+  const target = join(videos, 'demo');
+  callInstalled('new', target);
+  assert.match(readFileSync(join(target, 'video.yaml'), 'utf8'), new RegExp(`theme: ${name}`));
+  assert.match(readFileSync(join(target, 'brief.md'), 'utf8'), /Format:\n320 × 240/);
+  const created = readFileSync(join(target, 'video.yaml'));
+  writeFileSync(join(videos, 'explainer.yaml'), `assetRoots: [../shared]\nthemeRoots: [../themes]\ncontext: [../guide.md]\ndefaults: { theme: ${name}, width: 320, height: 240, fps: 12 }\n`);
+  assert.deepEqual(readFileSync(join(target, 'video.yaml')), created, 'config changes must not rewrite existing videos');
+  writeFileSync(join(target, 'video.yaml'), `version: 1\nvideo: { id: ${name}, theme: ${name}, width: 320, height: 240, fps: 10 }\nscenes:\n  - { id: art, duration: 1, elements: [{ id: shape, type: asset, asset: ${name} }] }\n  - { id: plain, duration: 1, elements: [] }\n`);
+  assert.match(callInstalled('assets', target), new RegExp(`${name}.*\\[configured\\]`));
+  assert.match(callInstalled('assets', target), new RegExp(`theme:${name}.*\\[configured\\]`));
+  const elsewhere = join(base, 'alternate');
+  mkdirSync(elsewhere);
+  writeFileSync(join(elsewhere, 'video.yaml'), readFileSync(join(target, 'video.yaml')));
+  assert.match(callInstalled('validate', elsewhere, '--config', join(videos, 'explainer.yaml')), new RegExp(`ok\\s+${name}`));
+  assert.match(callInstalled('render', target), /2 rendered, 0 reused/);
+  assert.match(callInstalled('render', target), /0 rendered, 2 reused/);
+  writeFileSync(join(shared, `${name}.svg`), '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 40"><circle cx="40" cy="20" r="15" fill="#00ff00"/></svg>');
+  assert.match(callInstalled('render', target), /1 rendered, 1 reused/);
+  writeFileSync(join(target, 'video.yaml'), readFileSync(join(target, 'video.yaml'), 'utf8').replace(`asset: ${name}`, 'asset: missing'));
+  const missing = spawnSync(process.execPath, [home === cwd ? cli : cli2, 'validate', target], { cwd: home, env, encoding: 'utf8' });
+  assert.equal(missing.status, 1);
+  assert.match(missing.stderr, /unknown asset "missing"/);
+  writeFileSync(join(target, 'video.yaml'), readFileSync(join(target, 'video.yaml'), 'utf8').replace('asset: missing', `asset: ${name}`));
+  const collision = join(shared, `${name}-copy.svg`);
+  writeFileSync(collision, '<svg/>');
+  writeFileSync(join(shared, `${name}_copy.svg`), '<svg/>');
+  const duplicate = spawnSync(process.execPath, [home === cwd ? cli : cli2, 'assets', target], { cwd: home, env, encoding: 'utf8' });
+  assert.equal(duplicate.status, 1);
+  assert.match(duplicate.stderr, /duplicate asset.*copy.svg.*copy.svg/);
+}
 // Decode-only import and scene mix parity, using synthetic narration.
 const spoken = join(cwd, 'videos', 'spoken');
 mkdirSync(spoken);

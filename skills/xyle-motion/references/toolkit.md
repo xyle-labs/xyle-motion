@@ -58,8 +58,8 @@ what replace it: the outgoing scene clears, the incoming one arrives.
 
 ## Themes
 
-The public starter uses the bundled neutral palette. Per-client theme lookup is
-planned; use supported explicit scene/video colours in the meantime.
+The public starter uses the bundled neutral palette. `explainer.yaml` can add
+theme roots; `video.theme` resolves a name from bundled and configured roots.
 
 `video.theme: neutral` loads the bundled `themes/neutral.yaml`. Any colour field may then name a
 palette entry (`color: accent`) instead of a hex, and the video's ground and ink
@@ -81,6 +81,9 @@ There is no `registry/assets.yaml`. **The filesystem is the registry**:
 `library/energy/coal-powerplant.svg` is `energy.coal_powerplant` (README §11
 id form, derived). `explainer assets <project>` lists everything available and
 marks what the project uses — run it before creating an asset (Rule 2).
+Configured asset roots use the same ID rule and may include `music/` and
+`sounds/` folders. Duplicate IDs are errors; place client art under a distinct
+subfolder such as `client/`.
 
 Bundled assets are inlined into the page, not `<img>`-ed, so `currentColor` and
 `var(--accent, ...)` in the art follow the element's `color`. Author new assets
