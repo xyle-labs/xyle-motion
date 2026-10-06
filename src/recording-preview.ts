@@ -9,6 +9,7 @@ import { rendererFingerprint } from './cache.ts';
 import { resolveAssets } from './library.ts';
 import { loadTheme } from './theme.ts';
 import type { VideoSpec } from './schema.ts';
+import type { ProjectConfig } from './config.ts';
 
 async function run(command: string, args: string[]) {
   await new Promise<void>((done, reject) => {
@@ -21,22 +22,22 @@ async function run(command: string, args: string[]) {
   });
 }
 
-export async function renderRecordingPreview(directory: string, spec: VideoSpec, sceneId: string, processed?: { file: string; duration: number }) {
+export async function renderRecordingPreview(directory: string, spec: VideoSpec, sceneId: string, processed?: { file: string; duration: number }, config?: ProjectConfig) {
   const index = spec.scenes.findIndex((s) => s.id === sceneId);
   if (index < 0) throw new Error('Preview scene is missing.');
   const original = spec.scenes[index];
   const scene = processed ? { ...original, duration: processed.duration, narration: { ...original.narration!, audio: processed.file } } : original;
   const previewSpec = { ...spec, scenes: [scene] };
   const project = directory;
-  const { assets, errors } = resolveAssets(previewSpec, undefined, project);
-  const { audio, errors: audioErrors } = resolveAudio(previewSpec, project);
+  const { assets, errors } = resolveAssets(previewSpec, undefined, project, config?.assetRoots);
+  const { audio, errors: audioErrors } = resolveAudio(previewSpec, project, config?.assetRoots);
   if (errors.length || audioErrors.length) throw new Error([...errors, ...audioErrors].join('\n'));
-  const palette = spec.video.theme ? loadTheme(spec.video.theme) : {};
+  const palette = spec.video.theme ? loadTheme(spec.video.theme, config?.themeRoots) : {};
   const props = JSON.stringify({ spec: previewSpec, assets, palette, audio });
   const offset = spec.scenes.slice(0, index).reduce((sum, s) => sum + s.duration, 0);
   const duration = spec.scenes.reduce((sum, s) => sum + s.duration, 0) + scene.duration - original.duration;
   const music = spec.video.music;
-  const track = music ? musicPath(music.file, project) : undefined;
+  const track = music ? musicPath(music.file, project, config?.assetRoots) : undefined;
   const key = createHash('sha256').update(props).update(rendererFingerprint())
     .update(readFileSync(new URL(import.meta.url)))
     .update(musicMixFilter(music?.volume ?? 0, duration, offset))

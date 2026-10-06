@@ -27,10 +27,25 @@ export function scan(root = LIBRARY): Map<string, string> {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       const path = join(dir, entry.name);
       if (entry.isDirectory()) walk(path);
-      else if (entry.name.endsWith('.svg')) found.set(assetId(relative(root, path)), path);
+      else if (entry.name.endsWith('.svg')) {
+        const id = assetId(relative(root, path));
+        if (found.has(id)) throw new Error(`duplicate asset "${id}": ${found.get(id)} and ${path}`);
+        found.set(id, path);
+      }
     }
   };
   walk(root);
+  return new Map([...found].sort());
+}
+
+export function scanAssets(roots: string[] = []): Map<string, string> {
+  const found = new Map<string, string>();
+  for (const root of [LIBRARY, ...roots]) {
+    for (const [id, path] of scan(root)) {
+      if (found.has(id)) throw new Error(`duplicate asset "${id}": ${found.get(id)} and ${path}`);
+      found.set(id, path);
+    }
+  }
   return new Map([...found].sort());
 }
 
@@ -64,8 +79,8 @@ export function suggest(id: string, known: Iterable<string>): string | undefined
 /** Embed bundled SVGs and local images, and report anything wrong with
  *  the references. The renderer never touches the filesystem, so the sources
  *  travel to it as input props. */
-export function resolveAssets(spec: VideoSpec, root = LIBRARY, project?: string) {
-  const library = scan(root);
+export function resolveAssets(spec: VideoSpec, root = LIBRARY, project?: string, roots: string[] = []) {
+  const library = root === LIBRARY ? scanAssets(roots) : scan(root);
   const assets: Record<string, string> = {};
   const errors: string[] = [];
 

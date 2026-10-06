@@ -9,9 +9,11 @@ import { PACKAGE_ROOT } from './paths.ts';
 export const THEMES = join(PACKAGE_ROOT, 'themes');
 export type Palette = Record<string, string>;
 
-export function loadTheme(name: string, root = THEMES): Palette {
-  const path = join(root, `${name}.yaml`);
-  if (!existsSync(path)) throw new Error(`no theme "${name}" — expected ${path}`);
+export function loadTheme(name: string, roots: string[] = []): Palette {
+  const matches = [THEMES, ...roots].map(root => join(root, `${name}.yaml`)).filter(existsSync);
+  if (matches.length > 1) throw new Error(`duplicate theme "${name}": ${matches.join(' and ')}`);
+  const path = matches[0];
+  if (!path) throw new Error(`no theme "${name}" — searched ${[THEMES, ...roots].join(', ')}`);
   return parse(readFileSync(path, 'utf8')).colors ?? {};
 }
 

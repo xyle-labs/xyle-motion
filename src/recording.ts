@@ -13,6 +13,7 @@ import { decodeRecording, enhanceRecording, wavSeconds, LOCAL_SPEAKERS, neuralVo
 import { VideoSpec } from './schema.ts';
 import { applyTheme, loadTheme } from './theme.ts';
 import { renderRecordingPreview } from './recording-preview.ts';
+import type { ProjectConfig } from './config.ts';
 
 const Settings = z.strictObject({
   start: z.number().min(0).default(0), end: z.number().positive(),
@@ -97,7 +98,7 @@ export function planVoice(seconds: number, duration: number, input: unknown, tex
   return { settings, speed, filters };
 }
 
-export async function startRecordingStudio(directory: string, port = 4318) {
+export async function startRecordingStudio(directory: string, port = 4318, config?: ProjectConfig) {
   const yaml = join(directory, 'video.yaml');
   const takesDir = join(directory, 'recordings', 'takes');
   const token = randomUUID();
@@ -109,7 +110,7 @@ export async function startRecordingStudio(directory: string, port = 4318) {
     const document = parseDocument(source);
     if (document.errors.length) throw new Error(document.errors[0].message);
     const raw = document.toJS();
-    const palette = raw.video?.theme ? loadTheme(raw.video.theme) : {};
+    const palette = raw.video?.theme ? loadTheme(raw.video.theme, config?.themeRoots) : {};
     return { document, spec: VideoSpec.parse(applyTheme(raw, palette)), revision: hash(source) };
   };
   const takePath = (id: string) => {
@@ -229,7 +230,7 @@ export async function startRecordingStudio(directory: string, port = 4318) {
         if (spec.scenes.find((s) => s.id === take.scene)?.narration?.text !== take.text) throw new Error('This take uses an older script. Record the current line.');
         previewing = true;
         try {
-          const result = await renderRecordingPreview(directory, spec, take.scene, take.processed);
+          const result = await renderRecordingPreview(directory, spec, take.scene, take.processed, config);
           if (readProject().revision !== revision) throw new Error('The project changed during preview. Refresh and try again.');
           return send(200, { url: `/media/preview?key=${result.key}`, duration: result.duration });
         } finally { previewing = false; }
@@ -265,7 +266,7 @@ export async function startRecordingStudio(directory: string, port = 4318) {
       }
       if (url.pathname === '/api/render') {
         render = { running: true, message: 'Rendering scenes and mixing your voice with music…' };
-        const child = spawn(process.execPath, [CLI_ENTRY, 'render', directory], { cwd: directory, stdio: ['ignore', 'pipe', 'pipe'] });
+        const child = spawn(process.execPath, [CLI_ENTRY, 'render', directory, ...(config?.path ? ['--config', config.path] : [])], { cwd: directory, stdio: ['ignore', 'pipe', 'pipe'] });
         let log = '';
         const collect = (chunk: Buffer) => { log = (log + chunk.toString()).slice(-4000); };
         child.stdout.on('data', collect);

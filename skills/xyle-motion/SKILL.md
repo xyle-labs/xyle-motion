@@ -25,11 +25,15 @@ Read [quality](references/quality.md) for artwork, motion or audio review and
 [patterns](references/patterns.md) when reusing a visual mechanism. Read only the
 needed section of [the system reference](references/toolkit.md) for DSL details.
 
+Read `explainer.yaml` in the video directory or its immediate parent, or the
+explicit `--config` file, when present. Resolve its `context` pointers relative
+to that file and read only documents relevant to this video. Pass the same
+`--config` to CLI commands when using another layout.
 Run `assets <video-directory>` before creating artwork. Select suitable objects
 by inspecting their appearance and states. Use bundled music by mood and effects
-for meaningful actions. Reuse files rather than regenerating them. Current
-shared client library/theme configuration is pending; do not invent unsupported
-fields. Existing external recordings/music paths remain video-relative.
+for meaningful actions. Reuse files rather than regenerating them. Shared
+asset/theme roots and creation defaults use the documented plain configuration.
+Existing external recordings/music paths remain video-relative.
 
 Recorded narration stays local with originals preserved. Plan at ≤165 spoken
 WPM including expanded numbers. Text without a take is silent. Never fabricate
