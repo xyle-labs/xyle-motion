@@ -19,7 +19,7 @@ const run = (command, args) => {
   assert.equal(result.status, 0, `${command} ${args.join(' ')}\n${result.error ?? ''}\n${result.stderr}\n${result.stdout.slice(-5000)}`);
   return result.stdout;
 };
-run('npm', ['install', '--offline', '--no-audit', '--no-fund', resolve(tarball)]);
+run('npm', ['install', '--no-audit', '--no-fund', resolve(tarball)]);
 const pkg = join(cwd, 'node_modules/@xyle-labs/motion');
 const cli = join(pkg, 'dist/bin/explainer.js');
 const fingerprint = (directory) => {
