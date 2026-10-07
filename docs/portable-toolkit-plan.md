@@ -9,16 +9,16 @@ remaining execution work:
 | Milestone | State | Tracking |
 | --- | --- | --- |
 | Installed package and external render | Implemented; full human playback/listening remains a release check | [#38](https://github.com/xyle-labs/xyle-motion/issues/38) |
-| Shared client resources and defaults | Video-relative artwork and local audio implemented; shared configuration pending | [#35](https://github.com/xyle-labs/xyle-motion/issues/35) |
-| Portable skill and client pilot | Skill implemented; client pilot pending after #35 | [#36](https://github.com/xyle-labs/xyle-motion/issues/36) |
-| Public repository and v0.1 release | Public repo and license complete; Linux render CI and release review pending | [#37](https://github.com/xyle-labs/xyle-motion/issues/37), [#38](https://github.com/xyle-labs/xyle-motion/issues/38) |
+| Shared client resources and defaults | Implemented | [#35](https://github.com/xyle-labs/xyle-motion/issues/35) |
+| Portable skill and client pilot | Skill implemented; client pilot pending | [#36](https://github.com/xyle-labs/xyle-motion/issues/36) |
+| Public repository and v0.1 release | Public repo, license and Linux render CI complete; release review pending | [#37](https://github.com/xyle-labs/xyle-motion/issues/37), [#38](https://github.com/xyle-labs/xyle-motion/issues/38) |
 
 Optional music ducking remains [#17](https://github.com/xyle-labs/xyle-motion/issues/17)
 with a [draft PR #29](https://github.com/xyle-labs/xyle-motion/pull/29).
 
 Video-relative PNG/WebP/SVG artwork now uses `type: asset` with `file:`;
-see the README for supported paths and controls. The shared configuration,
-asset roots and milestones below remain a plan, not additional CLI options.
+see the README for supported paths and controls. Shared configuration and asset
+roots are implemented; the remaining milestones describe pilot and release work.
 
 **Ship one installable package and one portable skill. The client project owns
 its videos and assets. Reuse the existing renderer. Prove this in the client project before
@@ -104,18 +104,18 @@ explainer render videos/learning-by-doing
 ```
 
 Use an explicit video directory containing `video.yaml`; no new project
-registry. For [#35](https://github.com/xyle-labs/xyle-motion/issues/35), add
-`--config <path>` for a shared workspace configuration. By default, look for
+registry. `--config <path>` selects a shared workspace configuration. By
+default, look for
 `explainer.yaml` in the video directory and its immediate parent only; explicit
 configuration handles other layouts. Resolve it the same way regardless of the
-shell's working directory. These configuration options are not implemented yet.
+shell's working directory.
 Keep unsupported/missing project paths as clear errors rather than guessing.
 
 `inspect` adapts the existing skill context helper; it returns a compact summary
 or one scene. Do not build another indexing service. Preserve `--scene` and
 scene-relative `--time` behavior across the existing commands.
 
-The planned optional configuration has only the fields the client project pilot needs: asset
+The optional configuration has only the fields the client project pilot needs: asset
 roots, theme roots, new-video defaults and a short list of context-document
 paths for the skill. Paths are relative to the configuration file. No inheritance,
 remote fetching or executable configuration. Defaults are copied into a new
@@ -134,7 +134,7 @@ helper only if the pilot shows the documented copy is a real onboarding problem.
 | --- | --- |
 | CLI target and explicit config argument | Relative to caller's working directory, normalized once |
 | Renderer entry point, studio files, bundled library, helper scripts | Relative to installed package location |
-| Shared asset/theme roots and context pointers (planned #35) | Relative to selected config file |
+| Shared asset/theme roots and context pointers | Relative to selected config file |
 | Narration, explicit music paths, per-video recordings/output | Relative to video directory |
 | Runtime/browser/model caches | Writable user cache or explicit local location; never the installed package |
 
@@ -187,7 +187,7 @@ video, `validate`, `frame`, `contact-sheet` and full `render` work. Inspect the
 frame and play the short MP4 with a bundled effect/music bed. No source checkout
 or ancestor `node_modules` can supply missing files. Test a path with spaces.
 
-### 2. Add client resources and complete local audio portability — partial, #35 next
+### 2. Add client resources and complete local audio portability — implemented
 
 Introduce the small shared configuration and resolver rules above. Carry the
 same resolved paths through `library.ts`, `theme.ts`, `audio.ts`, `cache.ts`,
@@ -227,7 +227,7 @@ toolkit repo or writing bespoke React. A later one-scene revision reads and
 changes that scene only. Capture available token usage and human review time;
 report actual measurements, not predicted savings.
 
-### 4. Prepare the public repository and v0.1 release — public repo done, #37/#38 pending
+### 4. Prepare the public repository and v0.1 release — public repo and #37 CI done, #38 pending
 
 Write a short README about the working product: prerequisites, package install,
 skill setup, first video, revisions and local audio. Link detailed references.
@@ -237,8 +237,8 @@ attributions. Verify redistribution rights file by file for shipped media;
 quarantine unclear assets from the public bundle without deleting originals.
 Document [Remotion's separate license](https://github.com/remotion-dev/remotion/blob/main/LICENSE.md).
 
-Current Ubuntu CI runs pure checks and build; add the packed-package render
-smoke workflow in #37. Start support
+Ubuntu CI runs pure checks, build and the installed-package render smoke.
+Start support
 claims with macOS and Linux once verified; do not claim Windows compatibility
 before its path, subprocess and audio flows are tested. Review the complete new
 Git tree and tarball contents, including all commits intended for publication.

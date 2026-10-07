@@ -5,20 +5,21 @@
 // bolt a provider dependency onto a toolkit whose whole point (§46 Rule 10) is
 // not to have one. The Skill drives them in Phase 5.
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { basename, join, relative, resolve } from 'node:path';
 import { remotionArgs as renderArgs, remotionCwd, runRemotion } from '../src/remotion.ts';
 import { PACKAGE_ROOT } from '../src/paths.ts';
 import { parseArgs } from 'node:util';
-import { parse, parseDocument } from 'yaml';
+import { parse, parseDocument, stringify } from 'yaml';
 import { z } from 'zod';
 import {
   enhanceRecording, musicPath, musicMixFilter, resolveAudio, wavSeconds,
 } from '../src/audio.ts';
 import { prune, rendererFingerprint, sceneKey } from '../src/cache.ts';
-import { resolveAssets, scan } from '../src/library.ts';
+import { resolveAssets, scanAssets } from '../src/library.ts';
+import { loadConfig, type ProjectConfig } from '../src/config.ts';
 import { VideoSpec } from '../src/schema.ts';
-import { applyTheme, loadTheme, type Palette } from '../src/theme.ts';
+import { applyTheme, loadTheme, THEMES, type Palette } from '../src/theme.ts';
 import { startRecordingStudio } from '../src/recording.ts';
 import { importRecording } from '../src/import-recording.ts';
 import { renderRecordingPreview } from '../src/recording-preview.ts';
@@ -39,6 +40,7 @@ const USAGE = `usage:
   explainer contact-sheet <video-directory> [--frames n] every scene on one page
   explainer render        <video-directory> [--scene id]  unchanged scenes are reused
 
+--config path selects explainer.yaml; otherwise the video directory and its parent are searched.
 --help, -h prints this help. --scene times are relative to the selected scene.
 preview and render --scene omit the music bed; use mix for scene audio review.`;
 
@@ -53,6 +55,7 @@ function argumentsFromCli() {
     input: { type: 'string' },
     port: { type: 'string' },
     note: { type: 'string' },
+    config: { type: 'string' },
   },
   }); } catch (error) { return die(`${(error as Error).message}\n${USAGE}`); }
 }
@@ -65,6 +68,9 @@ if (!['new', 'inspect', 'validate', 'assets', 'enhance', 'import', 'mix', 'revie
 
 const dir = resolve(target);
 const outDir = join(dir, 'output');
+let config: ProjectConfig;
+try { config = loadConfig(dir, values.config); }
+catch (error) { die((error as Error).message); }
 if (command === 'inspect') {
   const result = spawnSync(process.execPath, [join(PACKAGE_ROOT, 'skills/xyle-motion/scripts/context.mjs'), dir, ...(values.scene ? [values.scene] : [])], { stdio: 'inherit' });
   process.exit(result.status ?? 1);
@@ -95,9 +101,9 @@ if (command === 'import') {
 if (command === 'mix') {
   if (!values.scene) die('mix needs --scene id');
   try {
-    const { markerReviews } = resolveAudio({ ...loaded, scenes: keepScene(loaded, values.scene) }, dir);
+    const { markerReviews } = resolveAudio({ ...loaded, scenes: keepScene(loaded, values.scene) }, dir, config.assetRoots);
     if (markerReviews.length) console.log(`timing markers need narration review: ${markerReviews.join(', ')}`);
-    const result = await renderRecordingPreview(dir, loaded, values.scene);
+    const result = await renderRecordingPreview(dir, loaded, values.scene, undefined, config);
     const scene = loaded.scenes.find(scene => scene.id === values.scene)!;
     if (scene.narration && !scene.narration.audio)
       console.log(`script awaiting recording (silent): ${scene.id}`);
@@ -109,10 +115,10 @@ if (command === 'mix') {
 if (command === 'review') {
   let identity: string | undefined;
   try {
-    const resolved = resolveAssets(loaded, undefined, dir);
-    const sound = resolveAudio(loaded, dir);
+    const resolved = resolveAssets(loaded, undefined, dir, config.assetRoots);
+    const sound = resolveAudio(loaded, dir, config.assetRoots);
     if (!resolved.errors.length && !sound.errors.length)
-      identity = renderIdentity(loaded, dir, resolved.assets, palette, sound.audio);
+      identity = renderIdentity(loaded, dir, resolved.assets, palette, sound.audio, config.assetRoots);
   } catch { /* The review page labels inputs it cannot verify. */ }
   console.log(createReview(dir, loaded, identity, values.note));
   process.exit(0);
@@ -122,7 +128,7 @@ if (command === 'record') {
   if (values.scene) die('record opens the whole project; choose a scene in the studio');
   const port = Number(values.port ?? 4318);
   if (!Number.isInteger(port) || port < 0 || port > 65535) die('--port must be 0–65535');
-  const { url, server } = await startRecordingStudio(resolve(dir), port);
+  const { url, server } = await startRecordingStudio(resolve(dir), port, config);
   console.log(`Narration studio: ${url}\nKeep this command running. Ctrl+C stops the studio.`);
   await new Promise<void>((done) => server.once('close', done));
   process.exit(0);
@@ -139,16 +145,36 @@ if (loaded.video.music && (command === 'preview' || (command === 'render' && val
 
 // Asset references are checked here rather than in the Zod schema: the schema
 // also runs in the browser, where there is no library to look at.
-const { assets, errors } = resolveAssets(spec, undefined, dir);
+let assets: Record<string, string>, errors: string[];
+try { ({ assets, errors } = resolveAssets(spec, undefined, dir, config.assetRoots)); }
+catch (error) { die((error as Error).message); }
 if (errors.length) die(errors.join('\n'));
 
 if (command === 'assets') {
-  const library = scan();
+  const library = scanAssets(config.assetRoots);
   const used = new Set(Object.keys(assets));
   for (const id of used)
     if (id.startsWith('file:')) library.set(id, resolve(dir, id.slice(5)));
   for (const [id, path] of library)
-    console.log(`${used.has(id) ? '*' : ' '} ${id.padEnd(30)} ${path}`);
+    console.log(`${used.has(id) ? '*' : ' '} ${id.padEnd(30)} ${path}  [${path.startsWith(PACKAGE_ROOT) ? 'bundled' : id.startsWith('file:') ? 'video' : 'configured'}]`);
+  for (const [kind, roots, extension] of [
+    ['theme', [THEMES, ...config.themeRoots], '.yaml'],
+    ['music', [join(PACKAGE_ROOT, 'library/music'), ...config.assetRoots.map(root => join(root, 'music'))], '.wav'],
+    ['sound', [join(PACKAGE_ROOT, 'library/sounds'), ...config.assetRoots.map(root => join(root, 'sounds'))], '.wav'],
+  ] as const) {
+    const found = new Map<string, string>();
+    for (const root of roots) {
+      if (!existsSync(root)) continue;
+      for (const file of readdirSync(root).filter(name => name.endsWith(extension))) {
+        const id = file.slice(0, -extension.length);
+        const path = join(root, file);
+        if (found.has(id)) die(`duplicate ${kind} "${id}": ${found.get(id)} and ${path}`);
+        found.set(id, path);
+      }
+    }
+    for (const [id, path] of found)
+      console.log(`  ${`${kind}:${id}`.padEnd(30)} ${path}  [${path.startsWith(PACKAGE_ROOT) ? 'bundled' : 'configured'}]`);
+  }
   console.log(`\n${used.size} of ${library.size} used by ${project}  (* = used)`);
   process.exit(0);
 }
@@ -174,13 +200,13 @@ if (command === 'enhance') {
   process.exit(0);
 }
 
-const { audio, errors: audioErrors, unrecorded, markerReviews } = resolveAudio(spec, dir);
+const { audio, errors: audioErrors, unrecorded, markerReviews } = resolveAudio(spec, dir, config.assetRoots);
 if (markerReviews.length) console.log(`timing markers need narration review: ${markerReviews.join(', ')}`);
 if (audioErrors.length) die(audioErrors.join('\n'));
 if (unrecorded.length)
   console.log(`scripts awaiting recording (silent): ${unrecorded.join(', ')}`);
-if (spec.video.music && !existsSync(musicPath(spec.video.music.file, dir)))
-  die(`no music file at ${musicPath(spec.video.music.file, dir)}`);
+if (spec.video.music && !existsSync(musicPath(spec.video.music.file, dir, config.assetRoots)))
+  die(`no music file at ${musicPath(spec.video.music.file, dir, config.assetRoots)}`);
 
 if (command === 'validate') {
   const seconds = spec.scenes.reduce((sum, s) => sum + s.duration, 0);
@@ -269,7 +295,7 @@ function renderByScene(): never {
 
   if (music) {
     // a bare name resolves in the shared library; a path resolves in the project
-    const track = musicPath(music.file, dir);
+    const track = musicPath(music.file, dir, config.assetRoots);
     const duration = spec.scenes.reduce((sum, scene) => sum + scene.duration, 0);
     const mixed = spawnSync(
       process.execPath,
@@ -286,7 +312,7 @@ function renderByScene(): never {
     );
     if (mixed.status !== 0) die(mixed.error?.message ?? `Music mix failed (${mixed.status})`);
   }
-  saveRenderManifest(dir, spec, output, renderIdentity(spec, dir, assets, palette, audio));
+  saveRenderManifest(dir, spec, output, renderIdentity(spec, dir, assets, palette, audio, config.assetRoots));
   console.log(
     `${spec.scenes.length - reused} rendered, ${reused} reused  ->  ${output}`,
   );
@@ -337,7 +363,7 @@ function loadSpec(path: string): VideoSpec {
   // The theme is applied to the raw YAML before validation, so Zod's own
   // colour defaults only fill in where the theme said nothing.
   try {
-    if (document?.video?.theme) palette = loadTheme(document.video.theme);
+    if (document?.video?.theme) palette = loadTheme(document.video.theme, config.themeRoots);
   } catch (error) {
     return die(String((error as Error).message));
   }
@@ -366,7 +392,7 @@ Goal:
 What should the viewer understand afterwards?
 
 Format:
-9:16 vertical
+${config.defaults.width ?? 1080} × ${config.defaults.height ?? 1920}
 
 Duration:
 60 seconds
@@ -380,23 +406,10 @@ Recorded human voice + concise on-screen text (silent until recorded)
 }
 
 function starter(id: string) {
-  return `version: 1
-
-video:
-  id: ${JSON.stringify(id)}
-  width: 1080
-  height: 1920
-  fps: 30
-  theme: neutral
-  music: { file: daybreak, volume: 0.18 }
-
-scenes:
-  - id: intro
-    duration: 4
-    elements:
-      - id: title
-        type: text
-        text: ${JSON.stringify(id)}
-        enter: { type: slide-up, duration: 0.7 }
-`;
+  return stringify({ version: 1, video: {
+    id, width: 1080, height: 1920, fps: 30, theme: 'neutral',
+    music: { file: 'daybreak', volume: 0.18 }, ...config.defaults,
+  }, scenes: [{ id: 'intro', duration: 4, elements: [{
+    id: 'title', type: 'text', text: id, enter: { type: 'slide-up', duration: 0.7 },
+  }] }] });
 }

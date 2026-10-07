@@ -1,4 +1,4 @@
-# Development status — 6 October 2026
+# Development status — 7 October 2026
 
 Xyle Motion is a public development preview: one `@xyle-labs/motion` package,
 the `explainer` CLI and the `$xyle-motion` skill. `package.json` remains
@@ -17,10 +17,13 @@ and [licensing.md](licensing.md).
   browser recovery diagnostics.
 - A portable skill and development checks. The required `security` workflow
   runs the history scan, logic tests, build and skill context test on Ubuntu.
-  CodeQL also runs. The installed-tarball render smoke has been exercised
-  locally, including external paths, artwork, narration, cache behavior and an
-  unchanged installed package. Prior frame/contact-sheet inspection and MP4
-  probing are recorded; full human playback/listening review remains open.
+  Linux installed-tarball render CI runs the consumer smoke (PR #40), and
+  CodeQL also runs. Prior frame/contact-sheet inspection and MP4 probing are
+  recorded; full human playback/listening review remains open.
+- Optional `explainer.yaml` in the video directory or its parent, plus
+  `--config` for other layouts. Configured SVG/theme/audio roots, context
+  pointers, and creation defaults resolve from that file. New-video defaults
+  are copied into `video.yaml`; duplicate IDs fail with source paths (#35).
 
 Experimental OpenVoice/LavaSR helpers and Python dependency pins were retired.
 Neural restoration and speaker conversion are unavailable. Scene IDs are
@@ -29,14 +32,9 @@ engine validation; it is not a finished brand kit.
 
 ## Remaining work, in order
 
-1. [#35](https://github.com/xyle-labs/xyle-motion/issues/35): shared project
-   asset/theme roots and creation defaults. Video-relative artwork already works;
-   the planned `explainer.yaml` and `--config` interface do not yet exist.
-2. [#36](https://github.com/xyle-labs/xyle-motion/issues/36): an installed-package
+1. [#36](https://github.com/xyle-labs/xyle-motion/issues/36): an installed-package
    client project pilot, preserving originals and checking actual playback.
-3. [#37](https://github.com/xyle-labs/xyle-motion/issues/37): Linux CI for the
-   installed-tarball render smoke. Current Ubuntu CI checks do not render video.
-4. [#38](https://github.com/xyle-labs/xyle-motion/issues/38): exact-tree, tarball,
+2. [#38](https://github.com/xyle-labs/xyle-motion/issues/38): exact-tree, tarball,
    license/media and publication review. Keep npm publication disabled until
    release contents are approved.
 

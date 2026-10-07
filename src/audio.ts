@@ -18,6 +18,17 @@ export const scanSounds = (root = SOUNDS): Map<string, string> =>
       )
     : new Map();
 
+export function sharedSounds(roots: string[] = []): Map<string, string> {
+  const found = new Map<string, string>();
+  for (const root of [SOUNDS, ...roots.map(path => join(path, 'sounds'))]) {
+    for (const [id, path] of scanSounds(root)) {
+      if (found.has(id)) throw new Error(`duplicate sound "${id}": ${found.get(id)} and ${path}`);
+      found.set(id, path);
+    }
+  }
+  return found;
+}
+
 const dataUri = (buffer: Buffer) => `data:audio/wav;base64,${buffer.toString('base64')}`;
 
 /** Seconds, straight from the PCM WAV header — no subprocess, exact.
@@ -85,8 +96,8 @@ export function decodeRecording(input: string, output: string, limit?: number): 
 /** Inline every sound and narration line the spec references, and report what
  *  is wrong with the references. Audio travels as data URIs for the same reason
  *  the SVGs do: the renderer stays a pure function of its props. */
-export function resolveAudio(spec: VideoSpec, project: string) {
-  const library = scanSounds();
+export function resolveAudio(spec: VideoSpec, project: string, roots: string[] = []) {
+  const library = sharedSounds(roots);
   const audio: Record<string, string> = {};
   const errors: string[] = [];
   const unrecorded: string[] = [];
@@ -186,10 +197,13 @@ export function enhanceRecording(input: string, directory: string, edits = '', n
   }
 }
 
-export function musicPath(file: string, project: string) {
-  return file.includes('/')
-    ? join(project, file)
-    : join(PACKAGE_ROOT, 'library', 'music', `${file.replace(/\.wav$/, '')}.wav`);
+export function musicPath(file: string, project: string, roots: string[] = []) {
+  if (file.includes('/')) return join(project, file);
+  const name = `${file.replace(/\.wav$/, '')}.wav`;
+  const matches = [join(PACKAGE_ROOT, 'library'), ...roots]
+    .map(root => join(root, 'music', name)).filter(existsSync);
+  if (matches.length > 1) throw new Error(`duplicate music "${file}": ${matches.join(' and ')}`);
+  return matches[0] ?? join(PACKAGE_ROOT, 'library', 'music', name);
 }
 
 /** Same bed envelope for the final export and a scene preview at its timeline offset. */
