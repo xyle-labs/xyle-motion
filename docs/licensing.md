@@ -1,6 +1,6 @@
 # Dependency license review
 
-This dependency inventory reflects the pins on `main` as of 16 September 2026.
+This dependency inventory reflects the pins on `main` checked 7 October 2026.
 The original license review used `package-lock.json`, installed license files,
 the package file list and upstream terms. Recheck changed dependencies and the
 exact release artifact before publication. MIT is a suitable permissive license
@@ -39,7 +39,7 @@ Unlicense and Python-2.0 packages, plus these exceptions:
 
 | Component | License and implication |
 | --- | --- |
-| `mediabunny` and its AAC/FLAC/MP3 encoder packages, 1.55.5 | MPL-2.0. Its file-level copyleft applies to covered files, including modifications; it does not require separate Xyle files to use MPL. |
+| `mediabunny` and its AAC/FLAC/MP3 encoder packages, 1.56.1 | MPL-2.0. Its file-level copyleft applies to covered files, including modifications; it does not require separate Xyle files to use MPL. |
 | `caniuse-lite`, 1.0.30001810 | CC-BY-4.0 data. Preserve attribution and applicable notices when redistributing the data. |
 | Other `@remotion/*` modules and platform compositors | Separate upstream terms; missing npm license metadata is not a permissive license grant. Compositors also contain native FFmpeg components with their own terms. |
 | FFmpeg | Normally LGPL-2.1-or-later; GPL-enabled and nonfree builds have different distribution conditions. Check the actual build before redistributing binaries. |
