@@ -1,5 +1,19 @@
 # Narration studio
 
+The **iPhone Recorder** section pairs the standalone recorder with a protected
+internet API, sends scene scripts with pronunciation and delivery instructions,
+and automatically imports its original M4A takes. Start Studio with
+`XYLE_RECORDER_CONFIG=/path/to/private-credentials.json`; the file contains
+`api_url`, the matching video `project`, and its `token`.
+
+The authoritative API and provisioning guide live in the WarayWaray backend's
+`docs/mobile/voice-recorder.md`. The backend must be deployed and enabled first.
+For notifications while the phone is closed, configure `XYLE_APNS_KEY_FILE`,
+`XYLE_APNS_KEY_ID`, `XYLE_APNS_TEAM_ID` and the app's Apple push signing
+capability. Failed notifications leave the request queued. Importing a take
+never applies it to the video automatically. Phone lesson cues without a matching
+scene appear in the iPhone inbox for playback.
+
 Use gentle cleanup, RNNoise suppression, and pitch/tone controls for local
 voice processing. The experimental OpenVoice/LavaSR workflow has been retired;
 see its [status](NEURAL-VOICE.md).
