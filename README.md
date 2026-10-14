@@ -95,7 +95,9 @@ letters, digits, underscores or hyphens (for example, `intro` or `scene-2`).
 `record` opens the local recording studio. Recorded takes, gentle/RNNoise
 cleanup, trims, pitch controls and local previews are retained. Optional
 OpenVoice/LavaSR conversion is unavailable; its experimental Python workflow
-has been retired. No audio is uploaded. Text without a take is silent.
+has been retired. Browser recordings and processing stay local. The optional
+[Xyle Recorder companion](docs/voice-recorder.md) receives tasks and submits
+approved phone takes through a private hosted API. Text without a take is silent.
 
 Import prepared narration without cleanup or normalization:
 
