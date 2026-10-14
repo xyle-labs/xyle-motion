@@ -35,7 +35,14 @@ for meaningful actions. Reuse files rather than regenerating them. Shared
 asset/theme roots and creation defaults use the documented plain configuration.
 Existing external recordings/music paths remain video-relative.
 
-Recorded narration stays local with originals preserved. Plan at ≤165 spoken
+Keep original narration and processing in the user's project. For phone
+recording, use the paired Xyle Recorder workflow in
+[Voice Studio](../../studio/README.md): send the approved script and separate
+speaking instructions, then import explicitly submitted takes through the
+configured private API. WarayWaray operates the first backend; this skill
+never runs or deploys it. Do not provision credentials or send tasks unless the
+user authorizes that workflow. Imported takes still require listening and
+explicit selection before use in a video. Plan at ≤165 spoken
 WPM including expanded numbers. Text without a take is silent. Never fabricate
 listening or playback review. Validate, inspect representative frames, review
 motion in scene playback, and assess the complete music mix in a full render.
