@@ -24,11 +24,15 @@ test('bridge sends scoped credentials, persists request UUIDs, and verifies orig
   globalThis.fetch = async (url, options = {}) => {
     calls.push({ url: String(url), options });
     if (String(url).endsWith('/studio/devices')) return Response.json({ items: [{ id: deviceID, name: 'Phone', paired: true, push_token: '', environment: 'sandbox' }] });
+    if (String(url).includes('/studio/takes?')) return Response.json({ items: [
+      { id, project: 'video-a' }, { id: randomUUID(), project: 'video-b' },
+    ] });
     if (String(url).endsWith('/audio')) return new Response(bytes);
     return Response.json({ id });
   };
   try {
-    const bridge = new RecorderBridge({ api_url: 'https://example.test/mobile/recorder/v1', token: 'test-credential', project: 'p' });
+    const config = { api_url: 'https://example.test/mobile/recorder/v1', token: 'test-credential', project: 'xyle-motion' };
+    const bridge = new RecorderBridge(config, 'video-a');
     const data = { id, device_id: deviceID, scene: 'greeting', language: 'Waray', text: 'Maupay nga aga.', instructions: 'Pause after aga.' };
     const result = await bridge.request(data);
     assert.match(result.notification, /not configured/);
@@ -38,6 +42,13 @@ test('bridge sends scoped credentials, persists request UUIDs, and verifies orig
     assert.equal(mutations[0].url, mutations[1].url);
     assert.equal(mutations[0].options.body, mutations[1].options.body);
     assert.equal(JSON.parse(String(mutations[0].options.body)).instructions, data.instructions);
+    assert.equal(JSON.parse(String(mutations[0].options.body)).project, 'video-a');
+    assert.deepEqual((await bridge.takes()).map((take) => take.id), [id]);
+    assert.ok(calls.at(-1)!.url.endsWith('/studio/takes?project=video-a'));
+    const other = new RecorderBridge(config, 'video-b');
+    const otherTakes = await other.takes();
+    assert.equal(otherTakes.length, 1);
+    assert.equal(otherTakes[0].project, 'video-b');
     for (const call of calls) {
       assert.equal(call.options.redirect, 'error');
       assert.equal((call.options.headers as Record<string, string>)['X-Recorder-Studio-Token'], 'test-credential');

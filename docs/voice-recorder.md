@@ -8,6 +8,7 @@ Its source currently lives in the independent
 [recorder target](https://github.com/Jesse-jApps/waraywaray-ios/tree/main/VoiceRecorder)
 in the iOS repository.
 
+One phone pairing serves all recording projects in the configured Studio.
 Studio sends any project script, language and separate speaking instructions.
 The person works through **Record → Listen → Redo or Submit**. Only explicit
 submission transfers a take, and only server acknowledgement removes its task.
@@ -16,7 +17,8 @@ A completed queue waits for new requests. Originals remain available locally.
 WarayWaray is the first backend operator. Its existing Django deployment hosts
 pairing, scoped credentials, task state and private audio storage. The phone
 can submit anywhere with internet, including while the Mac is offline. Studio
-imports when next opened. The API host is configured in private credentials,
+imports that video's takes when next opened; other projects remain queued.
+The API host is configured in private credentials,
 so a different compatible deployment can be used without changing the tool.
 
 The authoritative [API and deployment contract](https://github.com/Jesse-jApps/waraywaray.com/blob/main/docs/mobile/voice-recorder.md)

@@ -3,25 +3,26 @@ import { readFileSync } from 'node:fs';
 import { connect } from 'node:http2';
 
 export type PhoneDevice = { id: string; name: string; paired: boolean; push_token: string; environment: string };
-export type PhoneTake = { id: string; scene: string; text: string; language: string; sha256: string; created: string; request_id?: string };
+export type PhoneTake = { id: string; scene: string; text: string; language: string; sha256: string; created: string; request_id?: string; project?: string };
 type Config = { api_url: string; project: string; token: string };
 export const recorderDigest = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex');
 
 export class RecorderBridge {
   private config: Config;
-  constructor(config: Config) {
+  private project: string;
+  constructor(config: Config, project = config.project) {
     const url = new URL(config.api_url);
     if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash || !config.token)
       throw new Error('Recorder config needs an HTTPS API URL and a Studio token.');
     this.config = config;
+    this.project = project;
   }
 
   static fromEnvironment(project: string) {
     const file = process.env.XYLE_RECORDER_CONFIG;
     if (!file) return undefined;
     const config = JSON.parse(readFileSync(file, 'utf8')) as Config;
-    if (config.project !== project) throw new Error('Recorder config belongs to a different video project.');
-    return new RecorderBridge(config);
+    return new RecorderBridge(config, project);
   }
 
   private async response(path: string, method = 'GET', data?: unknown) {
@@ -51,7 +52,7 @@ export class RecorderBridge {
     const device = (await this.devices()).find((item) => item.id === data.device_id && item.paired);
     if (!device) throw new Error('Choose a paired iPhone.');
     const { id, ...body } = data;
-    const result = await (await this.response(`studio/requests/${id}`, 'PUT', body)).json();
+    const result = await (await this.response(`studio/requests/${id}`, 'PUT', { ...body, project: this.project })).json();
     let notification = 'Request saved. Push is not configured; it will appear when the app refreshes.';
     if (device.push_token && process.env.XYLE_APNS_KEY_FILE && process.env.XYLE_APNS_KEY_ID && process.env.XYLE_APNS_TEAM_ID) {
       try { await notifyPhone(device, id); notification = 'Request saved and accepted by Apple for notification delivery.'; }
@@ -61,7 +62,8 @@ export class RecorderBridge {
   }
 
   async takes(): Promise<PhoneTake[]> {
-    return ((await (await this.response('studio/takes')).json()) as { items: PhoneTake[] }).items;
+    const result = await (await this.response(`studio/takes?project=${encodeURIComponent(this.project)}`)).json() as { items: PhoneTake[] };
+    return result.items.filter((take) => (take.project ?? this.config.project) === this.project);
   }
 
   async audio(take: PhoneTake) {
@@ -111,7 +113,7 @@ async function notifyPhone(device: PhoneDevice, requestID: string) {
       stream.on('data', (chunk) => { reply += chunk; });
       stream.on('error', reject);
       stream.on('end', () => code === 200 ? resolve() : reject(new Error(`Apple push ${code}: ${reply.slice(0, 200)}`)));
-      stream.end(JSON.stringify({ aps: { alert: { title: 'New recording request', body: 'Open Voice Recorder to see the script and speaking instructions.' }, sound: 'default' }, request_id: requestID }));
+      stream.end(JSON.stringify({ aps: { alert: { title: 'New recording request', body: 'Open Xyle Recorder to see the script and speaking instructions.' }, sound: 'default' }, request_id: requestID }));
     });
   } finally { client.destroy(); }
 }

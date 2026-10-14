@@ -19,15 +19,16 @@ test('iPhone takes import as exact originals, acknowledge once, and remain separ
   writeFileSync(input, encodeWav(Int16Array.from({ length: 48000 }, (_, i) => Math.round(6000 * Math.sin(i / 48000 * Math.PI * 440))), 48000));
   assert.equal(spawnSync('ffmpeg', ['-loglevel', 'error', '-nostdin', '-i', input, '-c:a', 'aac', encoded]).status, 0);
   const bytes = readFileSync(encoded), id = randomUUID();
-  const remote = { id, scene: 'greeting', language: 'Waray', text: 'Maupay nga aga.', created: new Date().toISOString(), sha256: createHash('sha256').update(bytes).digest('hex') };
-  writeFileSync(config, JSON.stringify({ api_url: 'https://recorder.example.test/mobile/recorder/v1', token: 'fake-test-token', project: 'phone-test' }));
+  const remote = { id, project: 'phone-test', scene: 'greeting', language: 'Waray', text: 'Maupay nga aga.', created: new Date().toISOString(), sha256: createHash('sha256').update(bytes).digest('hex') };
+  const other = { ...remote, id: randomUUID(), project: 'another-video' };
+  writeFileSync(config, JSON.stringify({ api_url: 'https://recorder.example.test/mobile/recorder/v1', token: 'fake-test-token', project: 'xyle-motion' }));
   const previousConfig = process.env.XYLE_RECORDER_CONFIG, nativeFetch = globalThis.fetch;
   process.env.XYLE_RECORDER_CONFIG = config;
   let acknowledged = false;
   globalThis.fetch = async (url, options) => {
     if (!String(url).startsWith('https://recorder.example.test/')) return nativeFetch(url, options);
     if (String(url).endsWith('/studio/devices')) return Response.json({ items: [] });
-    if (String(url).endsWith('/studio/takes')) return Response.json({ items: acknowledged ? [] : [remote] });
+    if (String(url).endsWith('/studio/takes?project=phone-test')) return Response.json({ items: acknowledged ? [other] : [remote, other] });
     if (String(url).endsWith('/audio')) return new Response(bytes);
     if (String(url).endsWith('/ack')) { acknowledged = true; return Response.json({ imported: true }); }
     throw new Error('Unexpected recorder route');
