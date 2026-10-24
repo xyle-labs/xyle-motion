@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { mkdtempSync, mkdirSync, readFileSync, readdirSync, writeFileSync, cpSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+import { createRequire } from 'node:module';
 
 // Test the packed product, outside the checkout. Keep evidence for inspection.
 const tarball = process.argv[2];
@@ -137,13 +138,29 @@ assert.doesNotMatch(badBrowser.stderr, /\n\s+at /);
 const fresh = join(cwd, 'videos', 'fresh');
 call('new', fresh);
 assert.match(call('validate', fresh), /ok\s+fresh/);
-// Two independent installed consumers, each with its own config, art and theme.
+// A second consumer already owns a different React pair and hostile host config.
 const second = join(root, 'another client');
 mkdirSync(second);
-writeFileSync(join(second, 'package.json'), '{"name":"other-consumer","private":true}\n');
+const hostDependencies = { react: '18.3.1', 'react-dom': '18.3.1' };
+writeFileSync(join(second, 'package.json'), JSON.stringify({ name: 'other-consumer', private: true, dependencies: hostDependencies }));
+writeFileSync(join(second, 'remotion.config.js'), 'throw new Error("Second host config must not be loaded");\n');
+run('npm', ['install', '--no-audit', '--no-fund'], second);
+const hostRequire = createRequire(join(second, 'package.json'));
+for (const [name, version] of Object.entries(hostDependencies))
+  assert.equal(JSON.parse(readFileSync(hostRequire.resolve(`${name}/package.json`), 'utf8')).version, version);
 run('npm', ['install', '--no-audit', '--no-fund', resolve(tarball)], second);
-const cli2 = join(second, 'node_modules/@xyle-labs/motion/dist/bin/explainer.js');
+const pkg2 = join(second, 'node_modules/@xyle-labs/motion');
+const toolkitRequire = createRequire(join(pkg2, 'package.json'));
+const toolkitDependencies = JSON.parse(readFileSync(join(pkg2, 'package.json'), 'utf8')).dependencies;
+for (const name of Object.keys(hostDependencies)) {
+  assert.notEqual(toolkitDependencies[name], hostDependencies[name], `${name}: exercise a different host version`);
+  assert.equal(JSON.parse(readFileSync(toolkitRequire.resolve(`${name}/package.json`), 'utf8')).version,
+    toolkitDependencies[name], `${name}: toolkit must resolve its declared version`);
+}
+const secondBefore = fingerprint(pkg2);
+const cli2 = join(pkg2, 'dist/bin/explainer.js');
 const call2 = (...args) => run(process.execPath, [cli2, ...args], second);
+// Both consumers render with independent config, art and theme roots.
 for (const [home, callInstalled, name] of [[cwd, call, 'alpha'], [second, call2, 'beta']]) {
   const base = join(home, `project ${name}`);
   const videos = join(base, 'videos');
@@ -243,4 +260,11 @@ assertMixParity(duckedPreview);
 writeFileSync(spokenSpec, readFileSync(spokenSpec, 'utf8').replace('time: 0.25', 'time: 0.45'));
 assert.match(call('render', spoken), /1 rendered, 1 reused/, 'marker changes must invalidate the consuming scene');
 assert.equal(fingerprint(pkg), before, 'rendering must not write into the installed package');
+assert.equal(fingerprint(pkg2), secondBefore, 'rendering must not write into the second installed package');
+const finalHostDependencies = JSON.parse(readFileSync(join(second, 'package.json'), 'utf8')).dependencies;
+for (const [name, version] of Object.entries(hostDependencies)) {
+  assert.equal(finalHostDependencies[name], version, `${name}: preserve the host declaration`);
+  assert.equal(JSON.parse(readFileSync(hostRequire.resolve(`${name}/package.json`), 'utf8')).version,
+    version, `${name}: preserve the host resolution`);
+}
 console.log(`Packed consumer checks passed. Evidence: ${video}/output`);

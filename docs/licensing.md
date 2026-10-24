@@ -1,6 +1,6 @@
 # Dependency license review
 
-This dependency inventory reflects the pins on `main` as of 16 September 2026.
+This dependency inventory reflects the pins on `main` checked 24 October 2026.
 The original license review used `package-lock.json`, installed license files,
 the package file list and upstream terms. Recheck changed dependencies and the
 exact release artifact before publication. MIT is a suitable permissive license
@@ -12,19 +12,19 @@ requiring preservation of its copyright and permission notice.
 
 | Dependency | Pinned version | License |
 | --- | --- | --- |
-| React and React DOM | 19.3.0 | MIT |
+| React and React DOM | 19.3.1 | MIT |
 | YAML | 2.9.1 | ISC |
-| Zod | 4.6.4 | MIT |
-| Remotion and `@remotion/cli` | 4.0.524 | Custom Remotion License |
+| Zod | 4.6.7 | MIT |
+| Remotion and `@remotion/cli` | 4.0.534 | Custom Remotion License |
 | TypeScript (development) | 7.0.2 | Apache-2.0 |
-| `@types/node` (development) | 24.13.4 | MIT |
+| `@types/node` (development) | 24.19.2 | MIT |
 | `@types/react` (development) | 19.3.0 | MIT |
 
 The MIT/ISC/Apache dependencies do not require independently written Xyle files
 to use their license. Preserve their notices if redistributing their code.
 The installed dependency packages provide the applicable license texts.
 
-**Remotion is not MIT.** The [4.0.524 license](https://github.com/remotion-dev/remotion/blob/v4.0.524/LICENSE.md)
+**Remotion is not MIT.** The [4.0.534 license](https://github.com/remotion-dev/remotion/blob/v4.0.534/LICENSE.md)
 permits free video/image creation for individuals, for-profit organizations
 with up to three employees, nonprofits and noncommercial evaluation. Otherwise
 a Company License is required. Its prohibition on copying/modifying Remotion
@@ -39,8 +39,8 @@ Unlicense and Python-2.0 packages, plus these exceptions:
 
 | Component | License and implication |
 | --- | --- |
-| `mediabunny` and its AAC/FLAC/MP3 encoder packages, 1.55.5 | MPL-2.0. Its file-level copyleft applies to covered files, including modifications; it does not require separate Xyle files to use MPL. |
-| `caniuse-lite`, 1.0.30001810 | CC-BY-4.0 data. Preserve attribution and applicable notices when redistributing the data. |
+| `mediabunny` and its AAC/FLAC/MP3 encoder packages, 1.56.1 | MPL-2.0. Its file-level copyleft applies to covered files, including modifications; it does not require separate Xyle files to use MPL. |
+| `caniuse-lite`, 1.0.30001815 | CC-BY-4.0 data. Preserve attribution and applicable notices when redistributing the data. |
 | Other `@remotion/*` modules and platform compositors | Separate upstream terms; missing npm license metadata is not a permissive license grant. Compositors also contain native FFmpeg components with their own terms. |
 | FFmpeg | Normally LGPL-2.1-or-later; GPL-enabled and nonfree builds have different distribution conditions. Check the actual build before redistributing binaries. |
 
