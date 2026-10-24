@@ -132,23 +132,30 @@ export async function startRecordingStudio(directory: string, port = 4318, confi
     try {
       phoneDevices = await bridge.devices();
       const incoming = await bridge.takes();
+      let imported = 0;
+      const failures: string[] = [];
       for (const remote of incoming) {
-        const metadataPath = takePath(remote.id);
-        if (!/^[a-f0-9]{64}$/.test(remote.sha256)) throw new Error('Invalid iPhone take checksum.');
-        mkdirSync(takesDir, { recursive: true });
-        const original = join(takesDir, `${remote.id}.m4a`);
-        const raw = join(takesDir, `${remote.id}-raw.wav`);
-        if (!existsSync(original)) writeFileSync(original, await bridge.audio(remote), { flag: 'wx' });
-        if (recorderDigest(readFileSync(original)) !== remote.sha256) throw new Error('iPhone original checksum mismatch; take remains queued.');
-        if (!existsSync(metadataPath)) {
-          rmSync(raw, { force: true }); // Retry a failed decode; preserve the M4A original.
-          const seconds = decodeRecording(original, raw, 600);
-          saveTake({ id: remote.id, scene: remote.scene, text: remote.text, language: remote.language,
-            created: remote.created, original: relative(directory, original), raw: relative(directory, raw), seconds, source: 'iphone' });
-        }
-        await bridge.ack(remote.id);
+        try {
+          const metadataPath = takePath(remote.id);
+          if (!/^[a-f0-9]{64}$/.test(remote.sha256)) throw new Error('Invalid iPhone take checksum.');
+          mkdirSync(takesDir, { recursive: true });
+          const original = join(takesDir, `${remote.id}.m4a`);
+          const raw = join(takesDir, `${remote.id}-raw.wav`);
+          if (!existsSync(original)) writeFileSync(original, await bridge.audio(remote), { flag: 'wx' });
+          if (recorderDigest(readFileSync(original)) !== remote.sha256) throw new Error('iPhone original checksum mismatch; take remains queued.');
+          if (!existsSync(metadataPath)) {
+            rmSync(raw, { force: true }); // Retry a failed decode; preserve the M4A original.
+            const seconds = decodeRecording(original, raw, 600);
+            saveTake({ id: remote.id, scene: remote.scene, text: remote.text, language: remote.language,
+              created: remote.created, original: relative(directory, original), raw: relative(directory, raw), seconds, source: 'iphone' });
+          }
+          await bridge.ack(remote.id);
+          imported++;
+        } catch (error) { failures.push(`${remote.id}: ${(error as Error).message}`); }
       }
-      phoneMessage = incoming.length ? `Imported ${incoming.length} iPhone take(s).` : 'Connected. New iPhone takes import automatically.';
+      phoneMessage = incoming.length
+        ? `Imported ${imported} iPhone take(s).${failures.length ? ` ${failures.length} failed: ${failures.join('; ')}` : ''}`
+        : 'Connected. New iPhone takes import automatically.';
     } catch (error) { phoneMessage = `iPhone sync: ${(error as Error).message}`; }
     finally { syncingPhone = false; }
   };
