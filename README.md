@@ -174,8 +174,10 @@ For browser or localhost rendering failures, see [browser recovery](docs/browser
 
 External video directories, local artwork, and shared project asset/theme roots are implemented.
 The client project pilot is next. Explicit
-narration/music paths are relative to the video directory. No cloud rendering,
-accounts, or paid features are included.
+narration/music paths are relative to the video directory. Rendering and audio
+processing run locally. The optional Xyle Recorder companion uses separately
+provisioned credentials and a private hosted API; see its
+[guide](docs/voice-recorder.md). No cloud rendering or paid features are included.
 
 ## Development
 

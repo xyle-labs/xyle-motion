@@ -1,4 +1,4 @@
-# Development status — 7 October 2026
+# Development status — 24 October 2026
 
 Xyle Motion is a public development preview: one `@xyle-labs/motion` package,
 the `explainer` CLI and the `$xyle-motion` skill. `package.json` remains
@@ -15,7 +15,8 @@ and [licensing.md](licensing.md).
   cleanup; decode-only narration import; scene mixes with the final timeline
   music bed; editable narration timing markers; portable review bundles; and
   browser recovery diagnostics.
-- A portable skill and development checks. The required `security` workflow
+- A portable skill with self-contained recording guidance ([#51](https://github.com/xyle-labs/xyle-motion/issues/51))
+  and development checks. The required `security` workflow
   runs the history scan, logic tests, build and skill context test on Ubuntu.
   Linux installed-tarball render CI runs the consumer smoke (PR #40), and
   CodeQL also runs. Prior frame/contact-sheet inspection and MP4 probing are
@@ -24,6 +25,13 @@ and [licensing.md](licensing.md).
   `--config` for other layouts. Configured SVG/theme/audio roots, context
   pointers, and creation defaults resolve from that file. New-video defaults
   are copied into `video.yaml`; duplicate IDs fail with source paths (#35).
+- Optional Xyle Recorder integration sends approved scene scripts and separate
+  speaking instructions through a configured private API. One phone pairing
+  serves multiple videos; Studio imports checksum-verified originals for the
+  current video without applying them automatically ([PR #44](https://github.com/xyle-labs/xyle-motion/pull/44)).
+  The app and hosted backend ship separately. Package checks do not establish
+  physical-iPhone notification or listening acceptance; see the
+  [recorder guide](voice-recorder.md).
 
 Experimental OpenVoice/LavaSR helpers and Python dependency pins were retired.
 Neural restoration and speaker conversion are unavailable. Scene IDs are

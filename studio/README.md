@@ -18,7 +18,8 @@ scene appear in the iPhone inbox for playback.
 
 Use gentle cleanup, RNNoise suppression, and pitch/tone controls for local
 voice processing. The experimental OpenVoice/LavaSR workflow has been retired;
-see its [status](NEURAL-VOICE.md).
+neural speaker conversion is unavailable. The supported workflow needs no
+Python environment or neural model downloads.
 
 Start from the consuming project with an explicit video directory:
 
