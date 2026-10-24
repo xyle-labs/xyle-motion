@@ -6,7 +6,7 @@ import { basename, join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { parse } from 'yaml';
 import { VideoSpec } from './schema.ts';
-import { scanSounds, wavSeconds, encodeWav, resolveAudio, enhanceRecording, neuralVoiceAvailable } from './audio.ts';
+import { scanSounds, wavSeconds, encodeWav, resolveAudio, enhanceRecording, neuralVoiceAvailable, musicMixFilter } from './audio.ts';
 
 test('retired neural processing rejects requests before writing files', () => {
   const directory = mkdtempSync(join(tmpdir(), 'retired-voice-'));
@@ -135,4 +135,30 @@ test('enhance CLI attaches a separate cleaned take, caches it, and preserves the
     assert.equal(readFileSync(join(directory, 'video.yaml'), 'utf8'), source.replace('duration: 2', 'duration: 0.5'));
     assert.deepEqual(readFileSync(input), original);
   } finally { rmSync(directory, { recursive: true, force: true }); }
+});
+
+test('music mixes without invalid startup gain and preserves the fade envelope in offset previews', {
+  skip: spawnSync('ffmpeg', ['-version']).status !== 0 ? 'full FFmpeg required for music mixing' : false,
+}, () => {
+  for (const { offset, seconds, levels } of [
+    { offset: 0, seconds: 4, levels: [[0, 0.1], [0.3, 0.2], [1, 0.3], [3.25, 0.2], [3.99, 0.1]] },
+    { offset: 2, seconds: 2, levels: [[0, 0.3], [1.25, 0.2], [1.99, 0.1]] },
+  ]) {
+    // Constant signals make the narration floor and music gain measurable directly.
+    const mixed = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'warning', '-nostdin',
+      '-f', 'lavfi', '-i', `aevalsrc=0.1:s=48000:d=${seconds}`,
+      '-f', 'lavfi', '-i', `aevalsrc=0.5:s=48000:d=${seconds}`,
+      '-filter_complex', musicMixFilter(0.4, 4, offset), '-map', '[out]',
+      '-f', 'f32le', '-ac', '1', 'pipe:1']);
+    const stderr = mixed.stderr.toString();
+    assert.equal(mixed.status, 0, stderr);
+    assert.doesNotMatch(stderr, /Invalid value|NaN/);
+    assert.equal(mixed.stdout.length, seconds * 48000 * 4);
+    for (const [time, expected] of levels) {
+      const actual = mixed.stdout.readFloatLE(Math.round(time * 48000) * 4);
+      // FFmpeg evaluates gain once per audio frame, so allow one frame's fade step.
+      assert.ok(Math.abs(actual - expected) < 0.01,
+        `offset ${offset}, time ${time}: expected ${expected}, got ${actual}`);
+    }
+  }
 });
