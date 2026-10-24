@@ -10,7 +10,7 @@ import { parse } from 'yaml';
 import { encodeWav, enhanceRecording, wavSeconds } from './audio.ts';
 import { planVoice, readingPlan, spokenWordCount, startRecordingStudio } from './recording.ts';
 
-test('iPhone takes import as exact originals, acknowledge once, and remain separate from video publication', { skip: spawnSync('ffmpeg', ['-version']).status !== 0 }, async () => {
+test('failed iPhone takes preserve originals and never block later imports or duplicate acknowledgements', { skip: spawnSync('ffmpeg', ['-version']).status !== 0 }, async () => {
   const directory = mkdtempSync(join(tmpdir(), 'iphone-studio-'));
   const config = join(directory, 'credentials.json');
   const source = 'version: 1\nvideo: { id: phone-test }\nscenes:\n  - id: greeting\n    duration: 3\n    narration: { text: "Maupay nga aga." }\n    elements: []\n';
@@ -21,16 +21,26 @@ test('iPhone takes import as exact originals, acknowledge once, and remain separ
   const bytes = readFileSync(encoded), id = randomUUID();
   const remote = { id, project: 'phone-test', scene: 'greeting', language: 'Waray', text: 'Maupay nga aga.', created: new Date().toISOString(), sha256: createHash('sha256').update(bytes).digest('hex') };
   const other = { ...remote, id: randomUUID(), project: 'another-video' };
+  const invalidBytes = Buffer.from('00000018667479704d34412000000000', 'hex');
+  const invalid = { ...remote, id: randomUUID(), sha256: createHash('sha256').update(invalidBytes).digest('hex') };
   writeFileSync(config, JSON.stringify({ api_url: 'https://recorder.example.test/mobile/recorder/v1', token: 'fake-test-token', project: 'xyle-motion' }));
   const previousConfig = process.env.XYLE_RECORDER_CONFIG, nativeFetch = globalThis.fetch;
   process.env.XYLE_RECORDER_CONFIG = config;
   let acknowledged = false;
+  const downloads: string[] = [], acknowledgements: string[] = [];
   globalThis.fetch = async (url, options) => {
     if (!String(url).startsWith('https://recorder.example.test/')) return nativeFetch(url, options);
     if (String(url).endsWith('/studio/devices')) return Response.json({ items: [] });
-    if (String(url).endsWith('/studio/takes?project=phone-test')) return Response.json({ items: acknowledged ? [other] : [remote, other] });
-    if (String(url).endsWith('/audio')) return new Response(bytes);
-    if (String(url).endsWith('/ack')) { acknowledged = true; return Response.json({ imported: true }); }
+    if (String(url).endsWith('/studio/takes?project=phone-test')) return Response.json({ items: acknowledged ? [invalid, other] : [invalid, remote, other] });
+    if (String(url).endsWith('/audio')) {
+      const bad = String(url).includes(invalid.id);
+      downloads.push(bad ? invalid.id : id);
+      return new Response(bad ? invalidBytes : bytes);
+    }
+    if (String(url).endsWith('/ack')) {
+      acknowledgements.push(String(url).includes(invalid.id) ? invalid.id : id);
+      acknowledged = true; return Response.json({ imported: true });
+    }
     throw new Error('Unexpected recorder route');
   };
   let studio: Awaited<ReturnType<typeof startRecordingStudio>> | undefined;
@@ -38,9 +48,17 @@ test('iPhone takes import as exact originals, acknowledge once, and remain separ
     studio = await startRecordingStudio(directory, 0);
     const html = await (await nativeFetch(studio.url)).text();
     const token = /name="studio-token" content="([^"]+)"/.exec(html)![1];
-    await nativeFetch(studio.url + '/api/phone/sync', { method: 'POST', headers: { 'X-Studio-Token': token }, body: '{}' });
-    const state = await (await nativeFetch(studio.url + '/api/state')).json() as any;
+    let state: any;
+    for (let attempt = 0; attempt < 100; attempt++) {
+      state = await (await nativeFetch(studio.url + '/api/state')).json();
+      if (!state.phone.message.startsWith('Synchronizing')) break;
+      await new Promise((done) => setTimeout(done, 10));
+    }
     assert.equal(acknowledged, true);
+    assert.match(state.phone.message, /Imported 1 iPhone take\(s\)\. 1 failed:/);
+    assert.ok(state.phone.message.includes(invalid.id));
+    assert.match(state.phone.message, /Could not decode/);
+    assert.deepEqual(readFileSync(join(directory, 'recordings', 'takes', `${invalid.id}.m4a`)), invalidBytes);
     assert.equal(state.takes.length, 1);
     assert.equal(state.takes[0].id, id);
     assert.equal(state.takes[0].source, 'iphone');
@@ -50,6 +68,9 @@ test('iPhone takes import as exact originals, acknowledge once, and remain separ
     await nativeFetch(studio.url + '/api/phone/sync', { method: 'POST', headers: { 'X-Studio-Token': token }, body: '{}' });
     const again = await (await nativeFetch(studio.url + '/api/state')).json() as any;
     assert.equal(again.takes.length, 1);
+    assert.match(again.phone.message, /Imported 0 iPhone take\(s\)\. 1 failed:/);
+    assert.deepEqual(downloads, [invalid.id, id]);
+    assert.deepEqual(acknowledgements, [id]);
   } finally {
     if (studio) await new Promise<void>((done) => studio!.server.close(() => done()));
     globalThis.fetch = nativeFetch;
