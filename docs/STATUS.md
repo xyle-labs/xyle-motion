@@ -15,12 +15,18 @@ and [licensing.md](licensing.md).
   cleanup; decode-only narration import; scene mixes with the final timeline
   music bed; editable narration timing markers; portable review bundles; and
   browser recovery diagnostics.
+- Opt-in narration-only music ducking shares one envelope between final exports
+  and scene previews, with smooth attack/release and silence handling
+  ([#17](https://github.com/xyle-labs/xyle-motion/issues/17),
+  [PR #29](https://github.com/xyle-labs/xyle-motion/pull/29)). The maintainer
+  accepted the fixed/ducked ElevenLabs-voice listening comparison on 24 October 2026.
 - A portable skill with self-contained recording guidance ([#51](https://github.com/xyle-labs/xyle-motion/issues/51))
   and development checks. The required `security` workflow
   runs the history scan, logic tests, build and skill context test on Ubuntu.
   Linux installed-tarball render CI runs the consumer smoke (PR #40), and
   CodeQL also runs. Prior frame/contact-sheet inspection and MP4 probing are
-  recorded; full human playback/listening review remains open.
+  recorded; full client-video playback/listening remains part of the pilot
+  and release checks below.
 - Optional `explainer.yaml` in the video directory or its parent, plus
   `--config` for other layouts. Configured SVG/theme/audio roots, context
   pointers, and creation defaults resolve from that file. New-video defaults
@@ -46,8 +52,5 @@ engine validation; it is not a finished brand kit.
    license/media and publication review. Keep npm publication disabled until
    release contents are approved.
 
-Optional [#17](https://github.com/xyle-labs/xyle-motion/issues/17) music ducking
-has a [draft PR #29](https://github.com/xyle-labs/xyle-motion/pull/29) with
-automated checks; its requested listening review is still outstanding. The
-[implementation plan](portable-toolkit-plan.md) gives the milestone acceptance
+The [implementation plan](portable-toolkit-plan.md) gives the milestone acceptance
 details. GitHub issues track the remaining execution work.
