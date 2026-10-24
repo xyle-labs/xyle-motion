@@ -9,7 +9,7 @@ import { parseArgs } from 'node:util';
 import { parse, parseDocument, stringify } from 'yaml';
 import { z } from 'zod';
 import {
-  enhanceRecording, musicPath, musicMixFilter, resolveAudio, wavSeconds,
+  enhanceRecording, musicPath, musicMixFilter, narrationRanges, resolveAudio, wavSeconds,
 } from '../src/audio.ts';
 import { prune, rendererFingerprint, sceneKey } from '../src/cache.ts';
 import { resolveAssets, scanAssets } from '../src/library.ts';
@@ -314,7 +314,7 @@ function renderByScene(): never {
         '-i', stitched,
         '-stream_loop', '-1', '-i', track,
         '-filter_complex',
-        musicMixFilter(music.volume, duration),
+        musicMixFilter(music.volume, duration, 0, music.ducking ? narrationRanges(spec, dir) : []),
         '-map', '0:v', '-map', '[out]',
         '-c:v', 'copy', '-shortest', '-y', output,
       ]),

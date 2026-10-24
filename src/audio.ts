@@ -206,10 +206,50 @@ export function musicPath(file: string, project: string, roots: string[] = []) {
   return matches[0] ?? join(PACKAGE_ROOT, 'library', 'music', name);
 }
 
+/** Narration-only speech ranges. Pauses under 250 ms stay in one range. */
+export function narrationRanges(spec: VideoSpec, directory: string, interval?: [number, number]): [number, number][] {
+  const ranges: [number, number][] = [];
+  let offset = 0;
+  for (const scene of spec.scenes) {
+    const voice = scene.narration;
+    // Neighboring speech can release into the start or attack before the end.
+    const relevant = !interval || offset + scene.duration > interval[0] - 0.35 && offset < interval[1] + 0.08;
+    if (voice?.audio && voice.volume > 0 && relevant) {
+      const input = join(directory, voice.audio);
+      const seconds = Math.min(wavSeconds(input) ?? 0, scene.duration);
+      const result = spawnSync('ffmpeg', ['-hide_banner', '-nostdin', '-i', input,
+        '-af', `volume=${voice.volume},silencedetect=noise=-40dB:duration=${Math.min(0.25, seconds)}`, '-f', 'null', '-'],
+        { encoding: 'utf8', timeout: 120_000 });
+      if (result.error || result.status !== 0) throw new Error(`Narration ducking analysis failed: ${result.error?.message ?? result.stderr.slice(-500)}`);
+      let start = 0, silent = false;
+      for (const event of result.stderr.matchAll(/silence_(start|end): ([+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?)/g)) {
+        const time = Math.min(Number(event[2]), seconds);
+        if (event[1] === 'start') {
+          if (time > start) ranges.push([offset + start, offset + time]);
+          silent = true;
+        } else { start = time; silent = false; }
+      }
+      // Ignore millisecond-scale EOF timestamp rounding in older FFmpeg logs.
+      if (!silent && start < seconds - 0.001) ranges.push([offset + start, offset + seconds]);
+    }
+    offset += scene.duration;
+  }
+  return ranges;
+}
+
 /** Same bed envelope for the final export and a scene preview at its timeline offset. */
-export function musicMixFilter(volume: number, duration: number, offset = 0): string {
+export function musicMixFilter(volume: number, duration: number, offset = 0, narration: [number, number][] = []): string {
   const t = `(t+${offset})`;
   const fade = Math.min(1.5, duration);
+  // A short lookahead attack protects the first consonant; release spans pauses/cuts.
+  let activity = narration.map(([start, end]) => `max(0,min(1,min((${t}-${start - 0.08})/0.08,(${end + 0.35}-${t})/0.35)))`);
+  // Pair ranges so expression depth grows logarithmically within FFmpeg's limit.
+  while (activity.length > 1) {
+    const pairs = activity;
+    activity = Array.from({ length: Math.ceil(pairs.length / 2) }, (_, i) =>
+      pairs[i * 2 + 1] ? `max(${pairs[i * 2]},${pairs[i * 2 + 1]})` : pairs[i * 2]);
+  }
+  const duck = activity.length ? `*(1-0.75*${activity[0]})` : '';
   // FFmpeg evaluates the gain before the first frame, when t is undefined.
-  return `[1:a]volume='if(isnan(t),0,${volume}*min(1,${t}/0.6)*max(0,min(1,(${duration}-${t})/${fade})))':eval=frame[bed];[0:a][bed]amix=inputs=2:duration=first:normalize=0[out]`;
+  return `[1:a]volume='if(isnan(t),0,${volume}*min(1,${t}/0.6)*max(0,min(1,(${duration}-${t})/${fade}))${duck})':eval=frame[bed];[0:a][bed]amix=inputs=2:duration=first:normalize=0[out]`;
 }

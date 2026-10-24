@@ -10,11 +10,9 @@ remaining execution work:
 | --- | --- | --- |
 | Installed package and external render | Implemented; full human playback/listening remains a release check | [#38](https://github.com/xyle-labs/xyle-motion/issues/38) |
 | Shared client resources and defaults | Implemented | [#35](https://github.com/xyle-labs/xyle-motion/issues/35) |
+| Optional narration-driven music ducking | Implemented; listening comparison accepted 24 October 2026 | [#17](https://github.com/xyle-labs/xyle-motion/issues/17), [PR #29](https://github.com/xyle-labs/xyle-motion/pull/29) |
 | Portable skill and client pilot | Skill implemented; client pilot pending | [#36](https://github.com/xyle-labs/xyle-motion/issues/36) |
 | Public repository and v0.1 release | Public repo, license and Linux render CI complete; release review pending | [#37](https://github.com/xyle-labs/xyle-motion/issues/37), [#38](https://github.com/xyle-labs/xyle-motion/issues/38) |
-
-Optional music ducking remains [#17](https://github.com/xyle-labs/xyle-motion/issues/17)
-with a [draft PR #29](https://github.com/xyle-labs/xyle-motion/pull/29).
 
 Video-relative PNG/WebP/SVG artwork now uses `type: asset` with `file:`;
 see the README for supported paths and controls. Shared configuration and asset

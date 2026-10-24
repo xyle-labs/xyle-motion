@@ -241,21 +241,52 @@ const samples = (file, offset) => {
   assert.equal(decoded.status, 0, decoded.stderr?.toString());
   return Array.from({ length: decoded.stdout.length / 4 }, (_, i) => decoded.stdout.readFloatLE(i * 4));
 };
-const fullAudio = samples(join(spoken, 'output', 'spoken.mp4'), 1.2);
-const previewAudio = samples(preview, 0);
-// AAC packet boundaries may shift decoded samples slightly; compare aligned interiors.
-let error = Infinity;
-for (let lag = -256; lag <= 256; lag++) {
-  let difference = 0, energy = 0;
-  for (let i = 800; i < Math.min(fullAudio.length, previewAudio.length) - 800; i++) {
-    difference += (fullAudio[i] - previewAudio[i + lag]) ** 2;
-    energy += fullAudio[i] ** 2;
+const assertMixParity = (previewFile) => {
+  const fullAudio = samples(join(spoken, 'output', 'spoken.mp4'), 1.2);
+  const previewAudio = samples(previewFile, 0);
+  // AAC packet boundaries may shift decoded samples slightly; compare aligned interiors.
+  let error = Infinity;
+  for (let lag = -256; lag <= 256; lag++) {
+    let difference = 0, energy = 0;
+    for (let i = 800; i < Math.min(fullAudio.length, previewAudio.length) - 800; i++) {
+      difference += (fullAudio[i] - previewAudio[i + lag]) ** 2;
+      energy += fullAudio[i] ** 2;
+    }
+    error = Math.min(error, difference / energy);
   }
-  error = Math.min(error, difference / energy);
-}
-assert.ok(error < 0.15, `scene mix must match the final timeline audio (relative error ${error})`);
+  assert.ok(error < 0.15, `scene mix must match the final timeline audio (relative error ${error})`);
+};
+assertMixParity(preview);
 assert.match(call('render', spoken), /0 rendered, 2 reused/, 'mix must leave the stitchable scene cache unchanged');
 const spokenSpec = join(spoken, 'video.yaml');
+writeFileSync(spokenSpec, readFileSync(spokenSpec, 'utf8').replace('volume: 0.35', 'volume: 0.35, ducking: true'));
+assert.match(call('render', spoken), /0 rendered, 2 reused/, 'ducking changes only the final mix');
+const duckedPreview = call('mix', spoken, '--scene', 'second').match(/: (.+\.mp4)\s*$/)?.[1];
+assert.ok(duckedPreview);
+assertMixParity(duckedPreview);
+// Unrelated broken references must not prevent either scene or unapplied-take previews.
+const validSpoken = readFileSync(spokenSpec, 'utf8');
+writeFileSync(spokenSpec, validSpoken + `  - { id: gap, duration: 2, elements: [] }
+  - { id: unrelated, duration: 1, narration: { text: Moved, audio: missing.wav }, elements: [] }
+`);
+assert.ok(call('mix', spoken, '--scene', 'second').match(/: (.+\.mp4)\s*$/)?.[1]);
+run(process.execPath, ['--input-type=module', '-e', `
+  import assert from 'node:assert/strict';
+  import { createRequire } from 'node:module';
+  import { existsSync, readFileSync } from 'node:fs';
+  import { join } from 'node:path';
+  import { pathToFileURL } from 'node:url';
+  const [pkg, directory] = process.argv.slice(1);
+  const require = createRequire(join(pkg, 'package.json'));
+  const { VideoSpec } = await import(pathToFileURL(join(pkg, 'dist/src/schema.js')));
+  const { renderRecordingPreview } = await import(pathToFileURL(join(pkg, 'dist/src/recording-preview.js')));
+  const spec = VideoSpec.parse(require('yaml').parse(readFileSync(join(directory, 'video.yaml'), 'utf8')));
+  const scene = spec.scenes.find(scene => scene.id === 'second');
+  const preview = await renderRecordingPreview(directory, spec, scene.id, { file: scene.narration.audio, duration: 1.4 });
+  assert.equal(preview.duration, 1.4);
+  assert.ok(existsSync(preview.output));
+`, pkg, spoken]);
+writeFileSync(spokenSpec, validSpoken);
 writeFileSync(spokenSpec, readFileSync(spokenSpec, 'utf8').replace('time: 0.25', 'time: 0.45'));
 assert.match(call('render', spoken), /1 rendered, 1 reused/, 'marker changes must invalidate the consuming scene');
 assert.equal(fingerprint(pkg), before, 'rendering must not write into the installed package');
