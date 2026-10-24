@@ -1,9 +1,5 @@
 #!/usr/bin/env node
-// ponytail: README §27 also lists `research` and `story`. Those are not
-// software — they are the agent writing research.md and story.md, which it can
-// already do with a text editor. A CLI command that shells out to a model would
-// bolt a provider dependency onto a toolkit whose whole point (§46 Rule 10) is
-// not to have one. The Skill drives them in Phase 5.
+// Research and story documents stay skill-authored; the CLI handles video operations.
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { basename, join, relative, resolve } from 'node:path';
@@ -22,6 +18,7 @@ import { VideoSpec } from '../src/schema.ts';
 import { applyTheme, loadTheme, THEMES, type Palette } from '../src/theme.ts';
 import { startRecordingStudio } from '../src/recording.ts';
 import { importRecording } from '../src/import-recording.ts';
+import { narrateScene } from '../src/elevenlabs.ts';
 import { renderRecordingPreview } from '../src/recording-preview.ts';
 import { createReview, renderIdentity, saveRenderManifest } from '../src/review.ts';
 
@@ -32,6 +29,7 @@ const USAGE = `usage:
   explainer assets        <video-directory>              library contents, * = used here
   explainer enhance       <video-directory> --scene id --input recording.m4a
   explainer import        <video-directory> --scene id --input take.mp3  decode only
+  explainer narrate       <video-directory> --scene id [--voice voiceId] [--model modelId]
   explainer mix           <video-directory> --scene id   final timeline music + voice/effects
   explainer record        <video-directory> [--port 4318] teleprompter and voice studio
   explainer review        <video-directory> [--note text] portable review bundle
@@ -42,6 +40,7 @@ const USAGE = `usage:
 
 --config path selects explainer.yaml; otherwise the video directory and its parent are searched.
 --help, -h prints this help. --scene times are relative to the selected scene.
+narrate requires ELEVENLABS_API_KEY and --voice or ELEVENLABS_VOICE_ID; the default model is eleven_v4.
 preview and render --scene omit the music bed; use mix for scene audio review.`;
 
 function argumentsFromCli() {
@@ -53,6 +52,8 @@ function argumentsFromCli() {
     time: { type: 'string' },
     frames: { type: 'string' },
     input: { type: 'string' },
+    voice: { type: 'string' },
+    model: { type: 'string' },
     port: { type: 'string' },
     note: { type: 'string' },
     config: { type: 'string' },
@@ -64,7 +65,7 @@ if (values.help) { console.log(USAGE); process.exit(0); }
 const [command, target] = positionals;
 const project = target ? basename(resolve(target)) : '';
 if (!command || !target) die(USAGE);
-if (!['new', 'inspect', 'validate', 'assets', 'enhance', 'import', 'mix', 'review', 'record', 'preview', 'frame', 'contact-sheet', 'render'].includes(command)) die(USAGE);
+if (!['new', 'inspect', 'validate', 'assets', 'enhance', 'import', 'narrate', 'mix', 'review', 'record', 'preview', 'frame', 'contact-sheet', 'render'].includes(command)) die(USAGE);
 
 const dir = resolve(target);
 const outDir = join(dir, 'output');
@@ -88,6 +89,15 @@ next:  explainer validate ${JSON.stringify(dir)}`);
 
 let palette: Palette = {};
 const loaded = loadSpec(join(dir, 'video.yaml'));
+
+if (command === 'narrate') {
+  if (!values.scene) die('narrate needs --scene id and --voice voiceId (or ELEVENLABS_VOICE_ID). ELEVENLABS_API_KEY is required.');
+  try {
+    const result = await narrateScene(dir, values.scene, { voice: values.voice, model: values.model });
+    console.log(`${result.reused ? 'reused' : 'generated'} ElevenLabs narration; attached ${result.seconds.toFixed(2)}s to ${values.scene}: ${result.file}`);
+  } catch (error) { die((error as Error).message); }
+  process.exit(0);
+}
 
 if (command === 'import') {
   if (!values.scene || !values.input) die('import needs --scene id --input recording.wav (or MP3/M4A/OGG/WebM)');
@@ -401,7 +411,7 @@ Language:
 English
 
 Narration:
-Recorded human voice + concise on-screen text (silent until recorded)
+ElevenLabs narration + concise on-screen text (silent until generated or recorded)
 `;
 }
 

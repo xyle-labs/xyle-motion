@@ -1,5 +1,19 @@
 # Narration studio
 
+For generated production narration, use the installed CLI with the approved
+scene script:
+
+```sh
+npm exec -- explainer narrate videos/first-video --scene intro --voice voiceId
+```
+
+It requires a process `ELEVENLABS_API_KEY`; `ELEVENLABS_VOICE_ID` can supply the
+voice, and `--model` overrides the default `eleven_v4`. Generation sends approved
+text to ElevenLabs and can consume account credits. Keep keys out of project
+files and arguments, reuse verified outputs and avoid blind retries. See the
+[narration guide](../skills/xyle-motion/references/recording.md). Existing human
+takes and the recording/cleanup controls below work offline without a key.
+
 The **iPhone Recorder** section pairs **Xyle Recorder**, the general iPhone
 companion, with a protected internet API, sends scene scripts with speaking instructions,
 and automatically imports its original M4A takes. Start Studio with
@@ -65,13 +79,15 @@ needs to land on a particular word. Extending a scene holds its default elements
 explicit element `until` times retain their authored timing.
 
 The browser only requests the microphone when you press Record, and releases it
-when you stop. Your browser's selected/default microphone is used. All processing
-stays on this computer. The bundled denoising model requires no runtime
-download, account, GPU, Python or API key. No cloud AI services are used.
+when you stop. Your browser's selected/default microphone is used. These
+recording and cleanup controls run on this computer. The bundled denoising model
+requires no runtime download, account, GPU, Python or API key. ElevenLabs
+generation is a separate explicit API operation.
 Original files and take metadata are stored under the video's
 `recordings/takes/`; processed WAVs go in its `recordings/enhanced/`.
 Back up the recordings alongside the project. Reopening the studio restores takes.
-Only **Use in video** updates the YAML; recording and previewing leave it untouched.
+Within Studio, only **Use in video** updates the YAML; recording and previewing
+leave it untouched.
 If the script or project changes, create a fresh preview before attaching a take.
 
 Technical references: browser recording uses [MediaRecorder](https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder)

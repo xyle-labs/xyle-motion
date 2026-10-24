@@ -36,8 +36,13 @@ selection and local recording studio. The agent writes content and `video.yaml`;
 the renderer remains deterministic. Token savings come from scoped reads,
 existing scene patterns and reused assets, not skipped visual/audio review.
 
-No monorepo, renderer rewrite, provider integration, MCP server, account system,
-asset marketplace, cloud rendering, new timeline editor or billing in v0.1.
+No monorepo, renderer rewrite, MCP server, toolkit account system, asset
+marketplace, cloud rendering, new timeline editor or billing in v0.1.
+Generated production narration uses ElevenLabs through the installed CLI with
+a required process API key ([#61](https://github.com/xyle-labs/xyle-motion/issues/61)).
+Only explicit generation sends the approved script to that provider; decoding,
+cleanup and deterministic rendering remain local. No local synthetic speech
+fallback is used.
 Public npm publication is optional for the pilot: a local npm tarball is enough.
 
 ## Where things live
@@ -196,7 +201,9 @@ paths already work for recording and preview; keep that behavior while adding
 shared resources.
 
 Keep native recording/import, FFmpeg cleanup, take previews and attachment.
-Preserve local-only processing and original-take protections. The experimental
+Preserve local recording, decoding, cleanup and original-take protections.
+Explicit generated narration uses ElevenLabs; its originals, decoded output and
+generation receipts remain in the video directory. The experimental
 OpenVoice/LavaSR helpers and vulnerable Python dependency pins have been retired.
 Any future replacement needs compatible, security-reviewed dependencies,
 model-license review and verified local inference. Do not download weights
@@ -213,7 +220,8 @@ Remove the skill's “run from toolkit root” requirement. Package its needed
 references with it; replace links to private finished projects with a few
 neutral working examples. Route scene/context reads through `inspect`. Preserve
 the concise workflow, reusable patterns, artwork review, music auditioning,
-local narration and final mix review established in the previous workflow update.
+ElevenLabs generation or human recordings, local postprocessing and final mix
+review established in the workflow.
 
 Locate the client project and read its own agent instructions. Install the packed version
 there, or first use a disposable copy if it is an active production workspace.
