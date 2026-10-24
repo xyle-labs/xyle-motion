@@ -18,6 +18,8 @@ const canWork = () => !active && !busy && !state?.render.running;
 function controls() {
   const locked = !canWork();
   for (const id of ['record', 'practice', 'import', 'takes', 'window', 'reset-pace', 'render']) $(id).disabled = locked;
+  for (const id of ['phone-pair', 'phone-sync', 'phone-request', 'phone-device', 'phone-instructions', 'phone-language']) $(id).disabled = locked;
+  $('phone-request').disabled ||= !scene?.text || !$('phone-device').value;
   document.querySelectorAll('#scenes button').forEach((button) => { button.disabled = locked; });
   for (const id of ['noise', 'speaker', 'tone', 'pitch', 'fit', 'trim-start', 'trim-end', 'lead']) $(id).disabled = locked;
   document.querySelectorAll('#speaker option:not([value="own"]), #noise option[value="lavasr"]').forEach((option) => { option.disabled = !state?.neuralAvailable; });
@@ -33,6 +35,7 @@ function controls() {
 
 async function refresh(keepTake = false) {
   state = await api('/api/state');
+  showPhone();
   $('project').textContent = title(state.project);
   const voiced = state.scenes.filter((s) => s.text);
   $('completion').textContent = `${voiced.filter((s) => s.audio).length} / ${voiced.length} scenes with voice`;
@@ -377,4 +380,53 @@ document.addEventListener('keydown', (event) => {
   event.preventDefault(); if (active) stop(); else start(true);
 });
 window.addEventListener('beforeunload', (event) => { if (active || busy) { event.preventDefault(); event.returnValue = ''; } });
+function showPhone() {
+  $('phone-controls').hidden = !state.phone?.enabled;
+  $('phone-status').textContent = state.phone?.message || 'Configure XYLE_RECORDER_CONFIG with the protected recorder API credentials.';
+  const selected = $('phone-device').value;
+  $('phone-device').replaceChildren(...(state.phone?.devices ?? []).filter((device) => device.paired).map((device) => {
+    const option = document.createElement('option'); option.value = device.id; option.textContent = device.name; return option;
+  }));
+  if ([...$('phone-device').options].some((option) => option.value === selected)) $('phone-device').value = selected;
+  $('phone-inbox').replaceChildren(...state.takes.filter((item) => item.source === 'iphone' && !state.scenes.some((s) => s.id === item.scene && s.text === item.text)).map((item) => {
+    const row = document.createElement('div');
+    const text = document.createElement('p'); text.textContent = `${item.language || ''} · ${item.text}`;
+    const audio = document.createElement('audio'); audio.controls = true; audio.preload = 'none'; audio.src = `/media/take?id=${encodeURIComponent(item.id)}`;
+    row.append(text, audio); return row;
+  }));
+}
+
+let phoneRequest;
+$('phone-pair').onclick = async () => {
+  if (!canWork()) return;
+  busy = true; controls();
+  try {
+    const result = await api('/api/phone/pair', { name: 'iPhone' });
+    $('phone-pairing').textContent = `In Voice Recorder → Studio, enter API: ${result.api_url} and pairing code: ${result.pairing_code}. Expires in 10 minutes; use once.`;
+    setTimeout(() => { $('phone-pairing').textContent = ''; }, result.expires_in * 1000);
+  } catch (error) { status(error.message, true); }
+  finally { busy = false; controls(); }
+};
+$('phone-sync').onclick = async () => {
+  if (!canWork()) return;
+  busy = true; controls();
+  try { await api('/api/phone/sync', {}); await refresh(); }
+  catch (error) { status(error.message, true); }
+  finally { busy = false; controls(); }
+};
+$('phone-request').onclick = async () => {
+  if (!canWork() || !scene.text) return;
+  const data = { device_id: $('phone-device').value, scene: scene.id, script: await scriptHash(scene.text),
+    language: $('phone-language').value, instructions: $('phone-instructions').value };
+  const fingerprint = JSON.stringify(data);
+  if (!phoneRequest || phoneRequest.fingerprint !== fingerprint) phoneRequest = { fingerprint, id: crypto.randomUUID() };
+  busy = true; controls();
+  try {
+    const result = await api('/api/phone/request', { ...data, id: phoneRequest.id });
+    status(result.notification); phoneRequest = null;
+  } catch (error) { status(error.message, true); }
+  finally { busy = false; controls(); }
+};
+// ponytail: polling updates an open Studio; queued assets remain on the API when the Mac sleeps.
+setInterval(() => { if (canWork() && state?.phone?.enabled) refresh(true).catch((error) => status(error.message, true)); }, 30_000);
 refresh().then(() => { if (state.render.running) pollRender(); }).catch((error) => status(error.message, true));

@@ -95,7 +95,9 @@ letters, digits, underscores or hyphens (for example, `intro` or `scene-2`).
 `record` opens the local recording studio. Recorded takes, gentle/RNNoise
 cleanup, trims, pitch controls and local previews are retained. Optional
 OpenVoice/LavaSR conversion is unavailable; its experimental Python workflow
-has been retired. No audio is uploaded. Text without a take is silent.
+has been retired. Browser recordings and processing stay local. The optional
+[Xyle Recorder companion](docs/voice-recorder.md) receives tasks and submits
+approved phone takes through a private hosted API. Text without a take is silent.
 
 Import prepared narration without cleanup or normalization:
 
@@ -169,8 +171,10 @@ For browser or localhost rendering failures, see [browser recovery](docs/browser
 
 External video directories, local artwork, and shared project asset/theme roots are implemented.
 The client project pilot is next. Explicit
-narration/music paths are relative to the video directory. No cloud rendering,
-accounts, or paid features are included.
+narration/music paths are relative to the video directory. Rendering and audio
+processing run locally. The optional Xyle Recorder companion uses separately
+provisioned credentials and a private hosted API; see its
+[guide](docs/voice-recorder.md). No cloud rendering or paid features are included.
 
 ## Development
 
