@@ -37,6 +37,34 @@ The video directory owns its `video.yaml`, `recordings/` and `output/`. Ignore
 `**/output/` and generated recording previews in the host repository. Back up
 original recordings. An existing directory is never overwritten by `new`.
 
+Optional shared resources live in `explainer.yaml` in the video directory or
+its immediate parent. Use `--config /path/to/explainer.yaml` for another layout.
+All paths inside the file are relative to that file, regardless of the shell
+directory. For example, in `videos/explainer.yaml`:
+
+```yaml
+assetRoots: [../artwork]
+themeRoots: [../brand/themes]
+context: [../docs/brand.md, ../docs/topic.md]
+defaults:
+  theme: client
+  width: 1080
+  height: 1920
+  fps: 30
+  music: { file: client-bed, volume: 0.18 }
+```
+
+Each asset root contains SVGs (IDs come from paths, such as `client/mark.svg`
+→ `client.mark`), and may contain `music/*.wav` and `sounds/*.wav`.
+Theme roots contain `<name>.yaml` palettes. Bundled and configured IDs share
+one namespace per resource type; duplicate IDs fail with both paths. `assets`
+lists artwork, themes, music and effects with source paths and marks bundled,
+configured, or video-local artwork. Context pointers are for
+the skill to read selectively; the renderer never reads their contents.
+`new` copies `defaults` into `video.yaml`; later configuration edits do not
+change that video's copied settings. Video-relative artwork, narration and
+explicit music paths retain their existing resolution.
+
 A six-second, two-scene example is included in `examples/minimal/video.yaml`.
 Copy its folder into your project to audition the reusable artwork, effects and
 continuous music bed. Its narration script is deliberately unrecorded.
@@ -57,7 +85,8 @@ another provider account. It reads only relevant project context and scene YAML.
 ## Commands
 
 `new`, `inspect`, `assets`, `validate`, `preview`, `frame`, `contact-sheet`,
-`record`, `enhance`, and `render` all accept an explicit video directory.
+`record`, `enhance`, `import`, `mix`, `review`, and `render` all accept an explicit
+video directory.
 Use `--scene <id>` for isolated changes and `--time <seconds>` for a frame.
 Scene IDs must start with an ASCII letter or digit and contain only ASCII
 letters, digits, underscores or hyphens (for example, `intro` or `scene-2`).
@@ -66,7 +95,9 @@ letters, digits, underscores or hyphens (for example, `intro` or `scene-2`).
 `record` opens the local recording studio. Recorded takes, gentle/RNNoise
 cleanup, trims, pitch controls and local previews are retained. Optional
 OpenVoice/LavaSR conversion is unavailable; its experimental Python workflow
-has been retired. No audio is uploaded. Text without a take is silent.
+has been retired. Browser recordings and processing stay local. The optional
+[Xyle Recorder companion](docs/voice-recorder.md) receives tasks and submits
+approved phone takes through a private hosted API. Text without a take is silent.
 
 Import prepared narration without cleanup or normalization:
 
@@ -118,7 +149,7 @@ paths and URLs are rejected. `assets` lists referenced local files alongside the
 bundled library; `validate` reports missing files. Changed image bytes invalidate
 only the rendered scenes using them.
 
-Use exactly one of `file` or a bundled `asset` ID. Local SVGs render as images;
+Use exactly one of `file` or a bundled/configured `asset` ID. Local SVGs render as images;
 they do not inherit theme colours or support `state`. Use self-contained SVGs
 with explicit colours and a `viewBox`. Bundled SVGs retain their inline styling
 and state controls. Files are embedded in render props; no package files change.
@@ -141,8 +172,8 @@ human approval. Regenerate after rendering a revision.
 
 For browser or localhost rendering failures, see [browser recovery](docs/browser-recovery.md).
 
-External video directories, local artwork and bundled assets/palettes/audio are implemented.
-Shared client asset/theme configuration and the client project pilot are next. Explicit
+External video directories, local artwork, and shared project asset/theme roots are implemented.
+The client project pilot is next. Explicit
 narration/music paths are relative to the video directory. No cloud rendering,
 accounts, or paid features are included.
 
@@ -164,6 +195,6 @@ node scripts/smoke.mjs /absolute/path/to/package.tgz
 These settings are optional. The renderer uses its own dependencies and an
 explicit empty configuration, rather than the host project's Remotion config.
 
-See [the extraction plan](docs/portable-toolkit-plan.md).
+See the [current status](docs/STATUS.md) and [implementation plan](docs/portable-toolkit-plan.md).
 
 Contributions go through pull requests. See [CONTRIBUTING.md](CONTRIBUTING.md).

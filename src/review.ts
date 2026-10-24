@@ -9,10 +9,10 @@ import { VideoSpec } from './schema.ts';
 const hash = (bytes: string | Buffer) => createHash('sha256').update(bytes).digest('hex');
 const escape = (value: string) => value.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 
-export function renderIdentity(spec: VideoSpec, directory: string, assets: object, palette: object, audio: object) {
+export function renderIdentity(spec: VideoSpec, directory: string, assets: object, palette: object, audio: object, roots: string[] = []) {
   return hash(JSON.stringify([spec, assets, palette, audio, rendererFingerprint(),
     hash(readFileSync(CLI_ENTRY)), hash(readFileSync(join(SOURCE_ROOT, COMPILED ? 'audio.js' : 'audio.ts'))),
-    spec.video.music ? hash(readFileSync(musicPath(spec.video.music.file, directory))) : null]));
+    spec.video.music ? hash(readFileSync(musicPath(spec.video.music.file, directory, roots))) : null]));
 }
 
 export function saveRenderManifest(directory: string, spec: VideoSpec, output: string, identity: string) {

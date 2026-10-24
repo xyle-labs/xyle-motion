@@ -9,7 +9,8 @@ For a requested short comparison reel, use the 25–30-second example in
 [patterns](patterns.md#short-comparison-reel) instead of the 60-second default.
 
 Run `npm exec -- explainer new videos/<id>`. It writes a neutral starter without
-an obligatory brand opening. The starter uses bundled assets, effects and music.
+an obligatory brand opening, or copies configured creation defaults when present.
+The starter otherwise uses bundled assets, effects and music.
 Write narration in scene `narration.text`; it is silent until a recording is
 attached. Source factual numbers, distinguish illustrative assumptions, and
 budget speech at ≤165 spoken WPM. Include any opening in the requested runtime.

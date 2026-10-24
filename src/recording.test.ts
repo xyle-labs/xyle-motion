@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -9,6 +9,54 @@ import { get } from 'node:http';
 import { parse } from 'yaml';
 import { encodeWav, enhanceRecording, wavSeconds } from './audio.ts';
 import { planVoice, readingPlan, spokenWordCount, startRecordingStudio } from './recording.ts';
+
+test('iPhone takes import as exact originals, acknowledge once, and remain separate from video publication', { skip: spawnSync('ffmpeg', ['-version']).status !== 0 }, async () => {
+  const directory = mkdtempSync(join(tmpdir(), 'iphone-studio-'));
+  const config = join(directory, 'credentials.json');
+  const source = 'version: 1\nvideo: { id: phone-test }\nscenes:\n  - id: greeting\n    duration: 3\n    narration: { text: "Maupay nga aga." }\n    elements: []\n';
+  writeFileSync(join(directory, 'video.yaml'), source);
+  const input = join(directory, 'input.wav'), encoded = join(directory, 'input.m4a');
+  writeFileSync(input, encodeWav(Int16Array.from({ length: 48000 }, (_, i) => Math.round(6000 * Math.sin(i / 48000 * Math.PI * 440))), 48000));
+  assert.equal(spawnSync('ffmpeg', ['-loglevel', 'error', '-nostdin', '-i', input, '-c:a', 'aac', encoded]).status, 0);
+  const bytes = readFileSync(encoded), id = randomUUID();
+  const remote = { id, project: 'phone-test', scene: 'greeting', language: 'Waray', text: 'Maupay nga aga.', created: new Date().toISOString(), sha256: createHash('sha256').update(bytes).digest('hex') };
+  const other = { ...remote, id: randomUUID(), project: 'another-video' };
+  writeFileSync(config, JSON.stringify({ api_url: 'https://recorder.example.test/mobile/recorder/v1', token: 'fake-test-token', project: 'xyle-motion' }));
+  const previousConfig = process.env.XYLE_RECORDER_CONFIG, nativeFetch = globalThis.fetch;
+  process.env.XYLE_RECORDER_CONFIG = config;
+  let acknowledged = false;
+  globalThis.fetch = async (url, options) => {
+    if (!String(url).startsWith('https://recorder.example.test/')) return nativeFetch(url, options);
+    if (String(url).endsWith('/studio/devices')) return Response.json({ items: [] });
+    if (String(url).endsWith('/studio/takes?project=phone-test')) return Response.json({ items: acknowledged ? [other] : [remote, other] });
+    if (String(url).endsWith('/audio')) return new Response(bytes);
+    if (String(url).endsWith('/ack')) { acknowledged = true; return Response.json({ imported: true }); }
+    throw new Error('Unexpected recorder route');
+  };
+  let studio: Awaited<ReturnType<typeof startRecordingStudio>> | undefined;
+  try {
+    studio = await startRecordingStudio(directory, 0);
+    const html = await (await nativeFetch(studio.url)).text();
+    const token = /name="studio-token" content="([^"]+)"/.exec(html)![1];
+    await nativeFetch(studio.url + '/api/phone/sync', { method: 'POST', headers: { 'X-Studio-Token': token }, body: '{}' });
+    const state = await (await nativeFetch(studio.url + '/api/state')).json() as any;
+    assert.equal(acknowledged, true);
+    assert.equal(state.takes.length, 1);
+    assert.equal(state.takes[0].id, id);
+    assert.equal(state.takes[0].source, 'iphone');
+    assert.deepEqual(readFileSync(join(directory, state.takes[0].original)), bytes);
+    assert.equal(readFileSync(join(directory, 'video.yaml'), 'utf8'), source);
+    assert.ok(wavSeconds(join(directory, state.takes[0].raw))! > 0);
+    await nativeFetch(studio.url + '/api/phone/sync', { method: 'POST', headers: { 'X-Studio-Token': token }, body: '{}' });
+    const again = await (await nativeFetch(studio.url + '/api/state')).json() as any;
+    assert.equal(again.takes.length, 1);
+  } finally {
+    if (studio) await new Promise<void>((done) => studio!.server.close(() => done()));
+    globalThis.fetch = nativeFetch;
+    if (previousConfig === undefined) delete process.env.XYLE_RECORDER_CONFIG; else process.env.XYLE_RECORDER_CONFIG = previousConfig;
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
 
 test('prompter leaves room at both ends and gives punctuation extra time', () => {
   const { cues, wpm } = readingPlan('One, two three.', 4);

@@ -1,13 +1,29 @@
 # Narration studio
 
+The **iPhone Recorder** section pairs **Xyle Recorder**, the general iPhone
+companion, with a protected internet API, sends scene scripts with speaking instructions,
+and automatically imports its original M4A takes. Start Studio with
+`XYLE_RECORDER_CONFIG=/path/to/private-credentials.json`; the file contains
+`api_url`, the Studio identity `project` (for example `xyle-motion`), and its `token`.
+Pair the phone once. Each task carries the current video ID, and the local
+Studio imports only that video's takes. Other projects' takes remain queued.
+
+The authoritative API and provisioning guide live in the WarayWaray backend's
+`docs/mobile/voice-recorder.md`. The backend must be deployed and enabled first.
+For notifications while the phone is closed, configure `XYLE_APNS_KEY_FILE`,
+`XYLE_APNS_KEY_ID`, `XYLE_APNS_TEAM_ID` and the app's Apple push signing
+capability. Failed notifications leave the request queued. Importing a take
+never applies it to the video automatically. Takes without a matching
+scene appear in the iPhone inbox for playback.
+
 Use gentle cleanup, RNNoise suppression, and pitch/tone controls for local
 voice processing. The experimental OpenVoice/LavaSR workflow has been retired;
 see its [status](NEURAL-VOICE.md).
 
-Start from the repository root:
+Start from the consuming project with an explicit video directory:
 
 ```sh
-npm run explainer record /path/to/video-directory
+npm exec -- explainer record /path/to/video-directory
 ```
 
 Open the printed local address in Chrome or Safari. Keep the terminal running.
@@ -51,8 +67,8 @@ The browser only requests the microphone when you press Record, and releases it
 when you stop. Your browser's selected/default microphone is used. All processing
 stays on this computer. The bundled denoising model requires no runtime
 download, account, GPU, Python or API key. No cloud AI services are used.
-Original files and take metadata are stored under
-`videos/<project>/recordings/takes/`; processed WAVs go in `recordings/enhanced/`.
+Original files and take metadata are stored under the video's
+`recordings/takes/`; processed WAVs go in its `recordings/enhanced/`.
 Back up the recordings alongside the project. Reopening the studio restores takes.
 Only **Use in video** updates the YAML; recording and previewing leave it untouched.
 If the script or project changes, create a fresh preview before attaching a take.

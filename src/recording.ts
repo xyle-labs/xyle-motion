@@ -3,7 +3,7 @@
 import { spawn, spawnSync } from 'node:child_process';
 import { PACKAGE_ROOT, CLI_ENTRY } from './paths.ts';
 import { createHash, randomUUID } from 'node:crypto';
-import { createReadStream, existsSync, mkdirSync, readFileSync, readdirSync, renameSync, statSync, writeFileSync } from 'node:fs';
+import { createReadStream, existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { createServer, type ServerResponse } from 'node:http';
 import { basename, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -13,6 +13,8 @@ import { decodeRecording, enhanceRecording, wavSeconds, LOCAL_SPEAKERS, neuralVo
 import { VideoSpec } from './schema.ts';
 import { applyTheme, loadTheme } from './theme.ts';
 import { renderRecordingPreview } from './recording-preview.ts';
+import type { ProjectConfig } from './config.ts';
+import { RecorderBridge, recorderDigest, type PhoneDevice } from './recorder-bridge.ts';
 
 const Settings = z.strictObject({
   start: z.number().min(0).default(0), end: z.number().positive(),
@@ -27,6 +29,7 @@ type Settings = z.infer<typeof Settings>;
 type Take = {
   id: string; scene: string; text: string; created: string; original: string; raw: string; seconds: number;
   processed?: { file: string; seconds: number; duration: number; speed: number; revision: string; settings: Settings };
+  source?: 'iphone'; language?: string;
 };
 const hash = (s: string | Buffer) => createHash('sha256').update(s).digest('hex');
 const atomic = (path: string, content: string) => {
@@ -97,7 +100,7 @@ export function planVoice(seconds: number, duration: number, input: unknown, tex
   return { settings, speed, filters };
 }
 
-export async function startRecordingStudio(directory: string, port = 4318) {
+export async function startRecordingStudio(directory: string, port = 4318, config?: ProjectConfig) {
   const yaml = join(directory, 'video.yaml');
   const takesDir = join(directory, 'recordings', 'takes');
   const token = randomUUID();
@@ -109,7 +112,7 @@ export async function startRecordingStudio(directory: string, port = 4318) {
     const document = parseDocument(source);
     if (document.errors.length) throw new Error(document.errors[0].message);
     const raw = document.toJS();
-    const palette = raw.video?.theme ? loadTheme(raw.video.theme) : {};
+    const palette = raw.video?.theme ? loadTheme(raw.video.theme, config?.themeRoots) : {};
     return { document, spec: VideoSpec.parse(applyTheme(raw, palette)), revision: hash(source) };
   };
   const takePath = (id: string) => {
@@ -120,6 +123,35 @@ export async function startRecordingStudio(directory: string, port = 4318) {
   const saveTake = (take: Take) => atomic(takePath(take.id), JSON.stringify(take, null, 2));
   const listTakes = (): Take[] => existsSync(takesDir)
     ? readdirSync(takesDir).filter((f) => f.endsWith('.json')).map((f) => readTake(f.slice(0, -5))).sort((a, b) => b.created.localeCompare(a.created)) : [];
+  const bridge = RecorderBridge.fromEnvironment(readProject().spec.video.id);
+  let phoneDevices: PhoneDevice[] = [], phoneMessage = '', syncingPhone = false;
+  const syncPhone = async () => {
+    if (!bridge || syncingPhone || render.running || previewing) return;
+    syncingPhone = true;
+    phoneMessage = 'Synchronizing iPhone takes…';
+    try {
+      phoneDevices = await bridge.devices();
+      const incoming = await bridge.takes();
+      for (const remote of incoming) {
+        const metadataPath = takePath(remote.id);
+        if (!/^[a-f0-9]{64}$/.test(remote.sha256)) throw new Error('Invalid iPhone take checksum.');
+        mkdirSync(takesDir, { recursive: true });
+        const original = join(takesDir, `${remote.id}.m4a`);
+        const raw = join(takesDir, `${remote.id}-raw.wav`);
+        if (!existsSync(original)) writeFileSync(original, await bridge.audio(remote), { flag: 'wx' });
+        if (recorderDigest(readFileSync(original)) !== remote.sha256) throw new Error('iPhone original checksum mismatch; take remains queued.');
+        if (!existsSync(metadataPath)) {
+          rmSync(raw, { force: true }); // Retry a failed decode; preserve the M4A original.
+          const seconds = decodeRecording(original, raw, 600);
+          saveTake({ id: remote.id, scene: remote.scene, text: remote.text, language: remote.language,
+            created: remote.created, original: relative(directory, original), raw: relative(directory, raw), seconds, source: 'iphone' });
+        }
+        await bridge.ack(remote.id);
+      }
+      phoneMessage = incoming.length ? `Imported ${incoming.length} iPhone take(s).` : 'Connected. New iPhone takes import automatically.';
+    } catch (error) { phoneMessage = `iPhone sync: ${(error as Error).message}`; }
+    finally { syncingPhone = false; }
+  };
   const videoFile = () => {
     const output = join(directory, 'output');
     const canonical = join(output, `${basename(directory)}.mp4`);
@@ -151,7 +183,8 @@ export async function startRecordingStudio(directory: string, port = 4318) {
       });
       previewCurrent = hash(JSON.stringify(rendered)) === hash(JSON.stringify(spec)) && statSync(videoFile()).mtimeMs >= statSync(yaml).mtimeMs;
     }
-    return { project: spec.video.id, revision, neuralAvailable: neuralVoiceAvailable(), maxWpm: MAX_WPM, scenes, takes: listTakes(), video: existsSync(videoFile()), videoVersion: existsSync(videoFile()) ? statSync(videoFile()).mtimeMs : 0, previewScenes, previewCurrent, render };
+    return { project: spec.video.id, revision, neuralAvailable: neuralVoiceAvailable(), maxWpm: MAX_WPM, scenes, takes: listTakes(), video: existsSync(videoFile()), videoVersion: existsSync(videoFile()) ? statSync(videoFile()).mtimeMs : 0, previewScenes, previewCurrent, render,
+      phone: { enabled: !!bridge, devices: phoneDevices.map(({ id, name, paired }) => ({ id, name, paired })), message: phoneMessage } };
   };
   let origin = '';
   const server = createServer(async (req, res) => {
@@ -222,6 +255,21 @@ export async function startRecordingStudio(directory: string, port = 4318) {
         return send(201, take);
       }
       const data = body.length ? JSON.parse(body.toString()) : {};
+      if (url.pathname.startsWith('/api/phone/')) {
+        if (!bridge) throw new Error('Configure XYLE_RECORDER_CONFIG to connect the recorder API.');
+        if (url.pathname === '/api/phone/sync') { await syncPhone(); return send(200, state()); }
+        if (url.pathname === '/api/phone/pair') {
+          const { name } = z.strictObject({ name: z.string().min(1).max(100) }).parse(data);
+          return send(201, await bridge.pair(name));
+        }
+        if (url.pathname === '/api/phone/request') {
+          const input = z.strictObject({ id: z.uuid(), device_id: z.uuid(), scene: z.string().min(1), script: z.string(),
+            language: z.string().min(1).max(60), instructions: z.string().max(4000) }).parse(data);
+          const current = readProject().spec.scenes.find((item) => item.id === input.scene);
+          if (!current?.narration || hash(current.narration.text) !== input.script) throw new Error('The script changed. Refresh before sending a request.');
+          return send(201, await bridge.request({ ...input, text: current.narration.text }));
+        }
+      }
       if (url.pathname === '/api/preview') {
         const take = readTake(data.id);
         const { spec, revision } = readProject();
@@ -229,7 +277,7 @@ export async function startRecordingStudio(directory: string, port = 4318) {
         if (spec.scenes.find((s) => s.id === take.scene)?.narration?.text !== take.text) throw new Error('This take uses an older script. Record the current line.');
         previewing = true;
         try {
-          const result = await renderRecordingPreview(directory, spec, take.scene, take.processed);
+          const result = await renderRecordingPreview(directory, spec, take.scene, take.processed, config);
           if (readProject().revision !== revision) throw new Error('The project changed during preview. Refresh and try again.');
           return send(200, { url: `/media/preview?key=${result.key}`, duration: result.duration });
         } finally { previewing = false; }
@@ -265,7 +313,7 @@ export async function startRecordingStudio(directory: string, port = 4318) {
       }
       if (url.pathname === '/api/render') {
         render = { running: true, message: 'Rendering scenes and mixing your voice with music…' };
-        const child = spawn(process.execPath, [CLI_ENTRY, 'render', directory], { cwd: directory, stdio: ['ignore', 'pipe', 'pipe'] });
+        const child = spawn(process.execPath, [CLI_ENTRY, 'render', directory, ...(config?.path ? ['--config', config.path] : [])], { cwd: directory, stdio: ['ignore', 'pipe', 'pipe'] });
         let log = '';
         const collect = (chunk: Buffer) => { log = (log + chunk.toString()).slice(-4000); };
         child.stdout.on('data', collect);
@@ -281,6 +329,9 @@ export async function startRecordingStudio(directory: string, port = 4318) {
     }
   });
   server.requestTimeout = 120_000;
+  const phoneTimer = setInterval(() => { void syncPhone(); }, 30_000);
+  phoneTimer.unref();
+  server.once('close', () => { clearInterval(phoneTimer); });
   await new Promise<void>((done, reject) => {
     server.once('error', reject);
     server.listen(port, '127.0.0.1', () => {
@@ -288,6 +339,7 @@ export async function startRecordingStudio(directory: string, port = 4318) {
       done();
     });
   });
+  void syncPhone();
   return { server, url: origin };
 }
 

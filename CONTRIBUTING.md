@@ -35,5 +35,10 @@ npm pack
 node scripts/smoke.mjs /absolute/path/to/package.tgz
 ```
 
+The `installed-package` CI check runs this smoke test on Ubuntu 24.04 x64 with
+Node.js 24, full FFmpeg and a Remotion-managed browser in a writable cache. It
+proves that Linux setup; macOS playback/listening and other platforms need their
+own review before support claims.
+
 Report vulnerabilities privately using the link in SECURITY.md. Public issues
 should contain only a minimal synthetic reproduction, never confidential data.

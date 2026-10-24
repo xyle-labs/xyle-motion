@@ -43,6 +43,19 @@
         </div>
       </section>
       <p id="status" role="status" aria-live="polite"></p>
+      <section class="takes-panel" id="phone-panel">
+        <div class="eyebrow">IPHONE RECORDER</div><h2>Record from anywhere</h2>
+        <p id="phone-status" class="hint">Configure the protected recorder API to connect your iPhone.</p>
+        <div id="phone-controls" hidden>
+          <div class="actions"><button id="phone-pair">Pair an iPhone</button><button id="phone-sync">Refresh iPhone takes</button></div>
+          <p id="phone-pairing" class="hint"></p>
+          <label>Recorder <select id="phone-device"></select></label>
+          <label>Language <input id="phone-language" value="English" maxlength="60"></label>
+          <label>How to say this scene <textarea id="phone-instructions" rows="3" maxlength="4000" placeholder="Pronunciation, emphasis, pauses, speed and tone"></textarea></label>
+          <button id="phone-request">Send this scene to iPhone</button>
+        </div>
+        <div id="phone-inbox"></div>
+      </section>
     </main>
   </div>
   <script src="/studio.js" type="module"></script>

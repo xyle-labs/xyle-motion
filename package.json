@@ -39,6 +39,7 @@
     "studio/*.html",
     "studio/*.css",
     "studio/*.js",
+    "studio/README.md",
     "skills/xyle-motion/SKILL.md",
     "skills/xyle-motion/references/",
     "skills/xyle-motion/scripts/context.mjs",

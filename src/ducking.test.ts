@@ -49,3 +49,48 @@ test('opt-in ducking follows narration, reduces the bed and recovers smoothly th
     assert.equal(musicMixFilter(0.5, 4), musicMixFilter(0.5, 4, 0, []));
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
+
+test('short wholly silent takes leave music unchanged while short speech still ducks', { skip: spawnSync('ffmpeg', ['-version']).status !== 0 }, () => {
+  const root = mkdtempSync(join(tmpdir(), 'motion-short-duck-'));
+  try {
+    const rate = 48000;
+    const spec = VideoSpec.parse({ version: 1, video: { id: 'short-duck' }, scenes: [
+      { id: 'before', duration: 2, elements: [] },
+      { id: 'take', duration: 12, narration: { text: 'Short take.', audio: 'take.wav' }, elements: [] },
+    ] });
+    for (const seconds of [0.1, 0.2, 0.249, 0.25, 4804 / rate, 36004 / rate, 480001 / rate]) {
+      writeFileSync(join(root, 'take.wav'), encodeWav(new Int16Array(Math.round(rate * seconds)), rate));
+      assert.deepEqual(narrationRanges(spec, root), [], `${seconds}s of silence must not duck music`);
+    }
+    writeFileSync(join(root, 'take.wav'), encodeWav(Int16Array.from({ length: rate / 10 }, (_, i) =>
+      Math.round(4000 * Math.sin(i / rate * 2 * Math.PI * 440))), rate));
+    assert.deepEqual(narrationRanges(spec, root), [[2, 2.1]]);
+    // Older FFmpeg logs this one-sample silence start in scientific notation.
+    const transient = new Int16Array(rate + 1);
+    transient[0] = 4000;
+    writeFileSync(join(root, 'take.wav'), encodeWav(transient, rate));
+    const brief = narrationRanges(spec, root);
+    assert.equal(brief.length, 1);
+    assert.equal(brief[0][0], 2);
+    assert.ok(brief[0][1] > 2 && brief[0][1] < 2.001, 'a leading sample must not duck the following silence');
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
+test('music ducking mixes long narration timelines without exceeding expression depth', { skip: spawnSync('ffmpeg', ['-version']).status !== 0 }, () => {
+  for (const count of [100, 150, 151]) {
+    const ranges: [number, number][] = Array.from({ length: count }, (_, i) => [0.5 + i * 0.03, 0.51 + i * 0.03]);
+    const result = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'warning', '-nostdin',
+      '-f', 'lavfi', '-i', 'aevalsrc=0.1:s=48000:d=6',
+      '-f', 'lavfi', '-i', 'aevalsrc=0.5:s=48000:d=6',
+      '-filter_complex', musicMixFilter(0.4, 6, 0, ranges), '-map', '[out]',
+      '-f', 'f32le', '-ac', '1', 'pipe:1'], { maxBuffer: 2 * 1024 * 1024 });
+    const stderr = result.stderr.toString();
+    assert.equal(result.status, 0, stderr);
+    assert.doesNotMatch(stderr, /Invalid value|NaN/);
+    assert.equal(result.stdout.length, 6 * 48000 * 4);
+    assert.ok(Math.abs(result.stdout.readFloatLE(2 * 48000 * 4) - 0.15) < 0.005,
+      `${count} ranges must reduce music while preserving narration gain`);
+    assert.ok(Math.abs(result.stdout.readFloatLE(5.8 * 48000 * 4) - 0.1267) < 0.005,
+      `${count} ranges must recover before the final fade`);
+  }
+});
