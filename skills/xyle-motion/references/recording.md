@@ -1,4 +1,43 @@
-# Recording narration
+# Narration
+
+## Generated production narration
+
+Use ElevenLabs for generated speech, with the approved script already in the
+scene's `narration.text`:
+
+```sh
+npm exec -- explainer narrate videos/first-video --scene intro --voice voiceId
+```
+
+Require `ELEVENLABS_API_KEY` in the process environment using the existing secret
+setup, with text-to-speech permission. Model listing permission is not required
+for `narrate`. A voice is required through `--voice` or `ELEVENLABS_VOICE_ID`.
+The key is required even when `narrate` can reuse a cached output.
+`--model modelId` overrides `eleven_v4`, the default from the
+[official quickstart](https://elevenlabs.io/docs/eleven-api/quickstart/).
+Missing credentials or voice must fail before a network request. Do not put
+keys into project files, YAML, command arguments, logs or generation receipts.
+
+Explicit generation sends the approved scene text to the official ElevenLabs
+HTTPS API and can consume account credits. The original MP3 and `receipt.json`
+stay under `recordings/elevenlabs/<request-hash>/` in the video. The receipt
+records generation identity and output checksums without the key or script.
+Fitting speech attaches through the existing import path as a decoded WAV under
+`recordings/imports/`. Overlong speech or a changed script leaves YAML and scene
+timing unchanged; the preserved output remains available for review and reuse.
+
+The same script, voice and model reuse the receipt-verified original instead of
+making a new request. An ambiguous failure leaves `pending.json` in the request
+folder and blocks another identical API call. Check provider history and recover
+any completed output before clearing that marker. Never blindly retry or
+substitute local synthetic speech. Listen to the generated take and review
+synchronization and the complete music mix before delivery. Existing music and
+effects stay in use.
+
+## Human recordings
+
+Existing human takes, recording, import, cleanup, inspection, validation and
+rendering work offline without an ElevenLabs key.
 
 Start Voice Studio from the consuming project with an explicit video directory:
 
