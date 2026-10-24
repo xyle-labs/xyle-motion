@@ -1,11 +1,34 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
+import { cpSync, existsSync, mkdtempSync, mkdirSync, writeFileSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { parse } from 'yaml';
+
+test('the copied skill keeps every local documentation link inside its own folder', () => {
+  const cwd = mkdtempSync(join(tmpdir(), 'explainer-skill-'));
+  const skill = join(cwd, '.agents', 'skills', 'xyle-motion');
+  const source = fileURLToPath(new URL('../', import.meta.url));
+  try {
+    mkdirSync(skill, { recursive: true });
+    cpSync(join(source, 'SKILL.md'), join(skill, 'SKILL.md'));
+    cpSync(join(source, 'references'), join(skill, 'references'), { recursive: true });
+    for (const file of readdirSync(skill, { recursive: true }).filter((file) => file.endsWith('.md'))) {
+      const path = join(skill, file);
+      for (const [, target] of readFileSync(path, 'utf8').matchAll(/\]\(([^\s)]+)\)/g)) {
+        if (/^(?:[a-z][\w+.-]*:|#)/i.test(target)) continue;
+        const destination = resolve(dirname(path), decodeURIComponent(target.split(/[?#]/)[0]));
+        const local = relative(skill, destination);
+        assert.ok(!isAbsolute(local) && local !== '..' && !local.startsWith(`..${sep}`), `${file}: ${target} escapes the copied skill`);
+        assert.ok(existsSync(destination), `${file}: missing copied reference ${target}`);
+      }
+    }
+  } finally {
+    rmSync(cwd, { recursive: true, force: true });
+  }
+});
 
 test('context summarizes current timing and audio, isolates a scene, and never edits the project', () => {
   const cwd = mkdtempSync(join(tmpdir(), 'explainer-context-'));
