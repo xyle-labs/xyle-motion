@@ -94,3 +94,39 @@ test('music ducking mixes long narration timelines without exceeding expression 
       `${count} ranges must recover before the final fade`);
   }
 });
+
+test('preview ducking ignores unrelated missing takes while retaining absolute boundary timing', { skip: spawnSync('ffmpeg', ['-version']).status !== 0 }, () => {
+  const root = mkdtempSync(join(tmpdir(), 'motion-preview-duck-'));
+  try {
+    const rate = 48000;
+    const tone = (seconds: number, active: (t: number) => boolean) => encodeWav(Int16Array.from({ length: rate * seconds }, (_, i) =>
+      active(i / rate) ? Math.round(4000 * Math.sin(i / rate * 2 * Math.PI * 440)) : 0), rate);
+    writeFileSync(join(root, 'prior.wav'), tone(1, t => t >= 0.8));
+    writeFileSync(join(root, 'selected.wav'), tone(2, t => t >= 0.8 && t < 1.2));
+    writeFileSync(join(root, 'next.wav'), tone(1, t => t < 0.2));
+    const spec = VideoSpec.parse({ version: 1, video: { id: 'preview-duck' }, scenes: [
+      { id: 'far-before', duration: 3, narration: { text: 'Moved take.', audio: 'missing-before.wav' }, elements: [] },
+      { id: 'gap-before', duration: 3, elements: [] },
+      { id: 'prior', duration: 1, narration: { text: 'Previous line.', audio: 'prior.wav' }, elements: [] },
+      { id: 'selected', duration: 2, narration: { text: 'Selected line.', audio: 'selected.wav' }, elements: [] },
+      { id: 'next', duration: 1, narration: { text: 'Next line.', audio: 'next.wav' }, elements: [] },
+      { id: 'gap-after', duration: 3, elements: [] },
+      { id: 'far-after', duration: 1, narration: { text: 'Moved take.', audio: 'missing-after.wav' }, elements: [] },
+    ] });
+    const ranges = narrationRanges(spec, root, [7, 9]);
+    assert.equal(ranges.length, 3);
+    for (const [i, expected] of [[0, [6.8, 7]], [1, [7.8, 8.2]], [2, [9, 9.2]]] as const)
+      assert.ok(ranges[i].every((time, j) => Math.abs(time - expected[j]) < 0.001), 'speech must retain full-timeline offsets');
+    assert.throws(() => narrationRanges(spec, root), /ENOENT/, 'full render analysis must still validate every take');
+    const mixed = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-nostdin',
+      '-f', 'lavfi', '-i', 'aevalsrc=0:s=48000:d=2',
+      '-f', 'lavfi', '-i', 'aevalsrc=0.5:s=48000:d=2',
+      '-filter_complex', musicMixFilter(0.4, 14, 7, ranges), '-map', '[out]', '-f', 'f32le', '-ac', '1', 'pipe:1']);
+    assert.equal(mixed.status, 0, mixed.stderr.toString());
+    const sample = (at: number) => mixed.stdout.readFloatLE(Math.round(at * rate) * 4);
+    assert.ok(Math.abs(sample(0) - 0.05) < 0.005, 'previous speech release crosses the preview start');
+    assert.ok(Math.abs(sample(0.4) - 0.2) < 0.005, 'music recovers in the selected scene pause');
+    assert.ok(Math.abs(sample(1) - 0.05) < 0.005, 'selected speech ducks at its absolute offset');
+    assert.ok(sample(1.99) > 0.05 && sample(1.99) < 0.19, 'next speech attack crosses the preview end');
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});

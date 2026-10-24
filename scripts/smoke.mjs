@@ -257,6 +257,29 @@ assert.match(call('render', spoken), /0 rendered, 2 reused/, 'ducking changes on
 const duckedPreview = call('mix', spoken, '--scene', 'second').match(/: (.+\.mp4)\s*$/)?.[1];
 assert.ok(duckedPreview);
 assertMixParity(duckedPreview);
+// Unrelated broken references must not prevent either scene or unapplied-take previews.
+const validSpoken = readFileSync(spokenSpec, 'utf8');
+writeFileSync(spokenSpec, validSpoken + `  - { id: gap, duration: 2, elements: [] }
+  - { id: unrelated, duration: 1, narration: { text: Moved, audio: missing.wav }, elements: [] }
+`);
+assert.ok(call('mix', spoken, '--scene', 'second').match(/: (.+\.mp4)\s*$/)?.[1]);
+run(process.execPath, ['--input-type=module', '-e', `
+  import assert from 'node:assert/strict';
+  import { createRequire } from 'node:module';
+  import { existsSync, readFileSync } from 'node:fs';
+  import { join } from 'node:path';
+  import { pathToFileURL } from 'node:url';
+  const [pkg, directory] = process.argv.slice(1);
+  const require = createRequire(join(pkg, 'package.json'));
+  const { VideoSpec } = await import(pathToFileURL(join(pkg, 'dist/src/schema.js')));
+  const { renderRecordingPreview } = await import(pathToFileURL(join(pkg, 'dist/src/recording-preview.js')));
+  const spec = VideoSpec.parse(require('yaml').parse(readFileSync(join(directory, 'video.yaml'), 'utf8')));
+  const scene = spec.scenes.find(scene => scene.id === 'second');
+  const preview = await renderRecordingPreview(directory, spec, scene.id, { file: scene.narration.audio, duration: 1.4 });
+  assert.equal(preview.duration, 1.4);
+  assert.ok(existsSync(preview.output));
+`, pkg, spoken]);
+writeFileSync(spokenSpec, validSpoken);
 writeFileSync(spokenSpec, readFileSync(spokenSpec, 'utf8').replace('time: 0.25', 'time: 0.45'));
 assert.match(call('render', spoken), /1 rendered, 1 reused/, 'marker changes must invalidate the consuming scene');
 assert.equal(fingerprint(pkg), before, 'rendering must not write into the installed package');

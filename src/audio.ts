@@ -207,12 +207,14 @@ export function musicPath(file: string, project: string, roots: string[] = []) {
 }
 
 /** Narration-only speech ranges. Pauses under 250 ms stay in one range. */
-export function narrationRanges(spec: VideoSpec, directory: string): [number, number][] {
+export function narrationRanges(spec: VideoSpec, directory: string, interval?: [number, number]): [number, number][] {
   const ranges: [number, number][] = [];
   let offset = 0;
   for (const scene of spec.scenes) {
     const voice = scene.narration;
-    if (voice?.audio && voice.volume > 0) {
+    // Neighboring speech can release into the start or attack before the end.
+    const relevant = !interval || offset + scene.duration > interval[0] - 0.35 && offset < interval[1] + 0.08;
+    if (voice?.audio && voice.volume > 0 && relevant) {
       const input = join(directory, voice.audio);
       const seconds = Math.min(wavSeconds(input) ?? 0, scene.duration);
       const result = spawnSync('ffmpeg', ['-hide_banner', '-nostdin', '-i', input,

@@ -38,7 +38,9 @@ export async function renderRecordingPreview(directory: string, spec: VideoSpec,
   const duration = spec.scenes.reduce((sum, s) => sum + s.duration, 0) + scene.duration - original.duration;
   const music = spec.video.music;
   const track = music ? musicPath(music.file, project, config?.assetRoots) : undefined;
-  const ranges = music?.ducking ? narrationRanges({ ...spec, scenes: spec.scenes.map((s, i) => i === index ? scene : s) }, project) : [];
+  const ranges = music?.ducking ? narrationRanges(
+    { ...spec, scenes: spec.scenes.map((s, i) => i === index ? scene : s) }, project, [offset, offset + scene.duration],
+  ) : [];
   const filter = musicMixFilter(music?.volume ?? 0, duration, offset, ranges);
   const key = createHash('sha256').update(props).update(rendererFingerprint())
     .update(readFileSync(new URL(import.meta.url)))
