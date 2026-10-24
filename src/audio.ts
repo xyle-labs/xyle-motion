@@ -210,5 +210,6 @@ export function musicPath(file: string, project: string, roots: string[] = []) {
 export function musicMixFilter(volume: number, duration: number, offset = 0): string {
   const t = `(t+${offset})`;
   const fade = Math.min(1.5, duration);
-  return `[1:a]volume='${volume}*min(1,${t}/0.6)*max(0,min(1,(${duration}-${t})/${fade}))':eval=frame[bed];[0:a][bed]amix=inputs=2:duration=first:normalize=0[out]`;
+  // FFmpeg evaluates the gain before the first frame, when t is undefined.
+  return `[1:a]volume='if(isnan(t),0,${volume}*min(1,${t}/0.6)*max(0,min(1,(${duration}-${t})/${fade})))':eval=frame[bed];[0:a][bed]amix=inputs=2:duration=first:normalize=0[out]`;
 }
