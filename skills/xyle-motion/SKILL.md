@@ -1,6 +1,6 @@
 ---
 name: xyle-motion
-description: Create, edit and review editable explainer videos inside the current project using Xyle Motion. Guide story development, reusable artwork, music, recorded narration, visual review and rendering through the installed CLI.
+description: Create, edit and review editable explainer videos inside the current project using Xyle Motion. Guide story development, reusable artwork, music, ElevenLabs or recorded narration, visual review and rendering through the installed CLI.
 ---
 
 # Xyle Motion
@@ -35,10 +35,19 @@ for meaningful actions. Reuse files rather than regenerating them. Shared
 asset/theme roots and creation defaults use the documented plain configuration.
 Existing external recordings/music paths remain video-relative.
 
-Keep original narration and processing in the user's project. For phone
-recording, use the paired Xyle Recorder workflow in
-[the recording guide](references/recording.md): send the approved script and separate
-speaking instructions, then import explicitly submitted takes through the
+Use ElevenLabs for generated production narration; require the process
+`ELEVENLABS_API_KEY` and an approved voice through `--voice` or
+`ELEVENLABS_VOICE_ID`. Follow [the narration guide](references/recording.md).
+Generate only the approved scene script, reuse verified cached output and avoid
+blind retries that may consume credits. Never substitute local synthetic speech
+or put keys in YAML, arguments, logs or receipts. Existing human takes,
+recording, cleanup and rendering remain usable offline without a provider key.
+Keep original audio and generation receipts in the user's project. Keep reusing
+music and effects; narration generation does not replace them.
+
+For phone recording, use the paired Xyle Recorder workflow in the same guide:
+send the approved script and separate speaking instructions, then import
+explicitly submitted takes through the
 configured private API. WarayWaray operates the first backend; this skill
 never runs or deploys it. Do not provision credentials or send tasks unless the
 user authorizes that workflow. Imported takes still require listening and
