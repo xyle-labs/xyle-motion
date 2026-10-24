@@ -20,6 +20,13 @@ and [licensing.md](licensing.md).
   ([#17](https://github.com/xyle-labs/xyle-motion/issues/17),
   [PR #29](https://github.com/xyle-labs/xyle-motion/pull/29)). The maintainer
   accepted the fixed/ducked ElevenLabs-voice listening comparison on 24 October 2026.
+- Explicit scene narration generation through ElevenLabs ([#61](https://github.com/xyle-labs/xyle-motion/issues/61)),
+  requiring a process API key and selected voice. Provider originals, decoded
+  WAVs and generation receipts stay local, with verified cache reuse and no
+  local synthetic speech fallback. Generation can consume account credits;
+  existing human takes and offline rendering remain usable without a key.
+  Live provider generation and listening acceptance remain separate from
+  package checks.
 - A portable skill with self-contained recording guidance ([#51](https://github.com/xyle-labs/xyle-motion/issues/51))
   and development checks. The required `security` workflow
   runs the history scan, logic tests, build and skill context test on Ubuntu.

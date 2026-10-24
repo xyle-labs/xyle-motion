@@ -1,16 +1,24 @@
 # Xyle Motion
 
 One package and one skill. The agent writes video YAML; the deterministic shared
-renderer reads it. Ponytail is the default. No per-video React or provider API.
+renderer reads it. Ponytail is the default. No per-video React. Generated
+production narration uses ElevenLabs through the installed CLI, with a required
+process `ELEVENLABS_API_KEY`; never substitute local synthetic speech.
 
 Read skills/xyle-motion/SKILL.md for video work and its references only as needed.
 Use explicit external video directories. Package resources resolve through
 src/paths.ts; writes belong to the video or writable runtime cache. Never derive
 client paths from the package working directory or load host Remotion config.
 
-Keep originals and all narration processing local. Reuse existing SVGs, music,
-effects and scene patterns. Validate and inspect actual frames; use playback
-for motion/audio. Do not claim checks that were not performed.
+Keep originals, decoded WAVs and generation receipts in the video directory.
+Explicit narration generation sends the approved scene script to ElevenLabs'
+official HTTPS API and can consume account credits. Reuse verified cached output;
+do not blindly retry an ambiguous provider result. Read credentials from the
+process environment; never write keys into source, YAML, arguments, logs or
+receipts. Browser recording, import, cleanup and rendering remain local and need
+no provider key. Reuse existing SVGs, music, effects and scene patterns; the
+narration requirement does not replace those assets. Validate and inspect actual
+frames; use playback for motion/audio. Do not claim checks that were not performed.
 
 Run npm run check and npm run build for logic changes. Packaging changes must
 pass the installed tarball smoke check in scripts/smoke.mjs. The repository is

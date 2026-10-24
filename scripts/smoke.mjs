@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { mkdtempSync, mkdirSync, readFileSync, readdirSync, writeFileSync, cpSync } from 'node:fs';
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, writeFileSync, cpSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { createRequire } from 'node:module';
@@ -41,7 +41,14 @@ mkdirSync(join(cwd, 'videos'));
 cpSync(join(pkg, 'examples/minimal'), video, { recursive: true });
 const call = (...args) => run(process.execPath, [cli, ...args]);
 assert.match(call('--help'), /usage:/);
+assert.match(call('--help'), /narrate/);
 assert.match(call('-h'), /decode only/);
+const missingKey = spawnSync(process.execPath, [cli, 'narrate', video, '--scene', 'idea', '--voice', 'test-voice'],
+  { cwd, env: { ...env, ELEVENLABS_API_KEY: '' }, encoding: 'utf8' });
+assert.equal(missingKey.status, 1);
+assert.match(missingKey.stderr, /ELEVENLABS_API_KEY is required/);
+assert.doesNotMatch(missingKey.stderr, /\n\s+at /);
+assert.ok(!existsSync(join(video, 'recordings')), 'missing credentials must not write recordings');
 const invalid = spawnSync(process.execPath, [cli, '--unknown'], { cwd, env, encoding: 'utf8' });
 assert.equal(invalid.status, 1);
 assert.doesNotMatch(invalid.stderr, /\n\s+at |ERR_PARSE_ARGS/);

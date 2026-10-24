@@ -12,8 +12,9 @@ licensing requirements. The package remains private and is not published to npm.
 ## Try the packed build in another project
 
 Requires Node.js 24 and npm. The first render downloads a headless browser into
-a writable user cache. Full FFmpeg on PATH is needed for recording/import and
-voice cleanup; Remotion supplies the FFmpeg used to stitch ordinary renders.
+a writable user cache. Full FFmpeg on PATH is needed to decode generated
+narration, import recordings and clean up voices; Remotion supplies the FFmpeg
+used to stitch ordinary renders.
 
 In this repository:
 
@@ -79,18 +80,44 @@ Claude Code can use the same folder via `.claude/skills/xyle-motion`.
 Ask: `$xyle-motion Create a short explainer using this project's knowledge.
 Guide me through the story, artwork, music and review.`
 
-The skill calls the installed CLI. It does not need this source checkout or
-another provider account. It reads only relevant project context and scene YAML.
+The skill calls the installed CLI and reads relevant project context and scene
+YAML. Offline authoring and rendering need no provider account. Generated
+production narration requires ElevenLabs credentials as described below.
 
 ## Commands
 
 `new`, `inspect`, `assets`, `validate`, `preview`, `frame`, `contact-sheet`,
-`record`, `enhance`, `import`, `mix`, `review`, and `render` all accept an explicit
-video directory.
+`narrate`, `record`, `enhance`, `import`, `mix`, `review`, and `render` all accept
+an explicit video directory.
 Use `--scene <id>` for isolated changes and `--time <seconds>` for a frame.
 Scene IDs must start with an ASCII letter or digit and contain only ASCII
 letters, digits, underscores or hyphens (for example, `intro` or `scene-2`).
 `contact-sheet --frames 3` shows three interior moments per scene.
+
+Generate production narration from an approved scene script with ElevenLabs:
+
+```sh
+npm exec -- explainer narrate videos/first-video --scene intro --voice voiceId
+```
+
+`ELEVENLABS_API_KEY` must already be in the process environment, including for
+cached `narrate` calls. Choose the voice with `--voice` or
+`ELEVENLABS_VOICE_ID`; `--model` overrides the default
+`eleven_v4`, following the [official quickstart](https://elevenlabs.io/docs/eleven-api/quickstart/).
+Missing credentials or voice fail before networking. Keys belong outside source,
+YAML, command arguments, logs and generation receipts. Existing human recordings,
+inspection, validation and rendering work offline without a key.
+
+An explicit `narrate` request sends the scene's approved text to the official
+ElevenLabs API and can consume account credits. The provider original, decoded
+WAV and generation receipt stay in the video's local recordings. Fitting speech
+attaches through the existing import path; overlong speech or script changes
+leave YAML and scene timing unchanged. Reuse verified cached output before
+making another request. An ambiguous result leaves a pending marker; check
+provider history before clearing it or retrying. There is no local synthetic
+speech fallback. Listen to the take and review the final music mix before
+delivery. See the portable
+[narration guide](skills/xyle-motion/references/recording.md).
 
 `record` opens the local recording studio. Recorded takes, gentle/RNNoise
 cleanup, trims, pitch controls and local previews are retained. Optional
@@ -174,10 +201,11 @@ For browser or localhost rendering failures, see [browser recovery](docs/browser
 
 External video directories, local artwork, and shared project asset/theme roots are implemented.
 The client project pilot is next. Explicit
-narration/music paths are relative to the video directory. Rendering and audio
-processing run locally. The optional Xyle Recorder companion uses separately
-provisioned credentials and a private hosted API; see its
-[guide](docs/voice-recorder.md). No cloud rendering or paid features are included.
+narration/music paths are relative to the video directory. Rendering, decoding
+and cleanup run locally; explicit narration generation uses ElevenLabs. The
+optional Xyle Recorder companion uses separately provisioned credentials and a
+private hosted API; see its
+[guide](docs/voice-recorder.md). Cloud rendering is not included.
 
 ## Development
 
