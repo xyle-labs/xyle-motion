@@ -37,6 +37,12 @@ export function createReview(directory: string, spec: VideoSpec, identity: strin
   const rendered = VideoSpec.safeParse(manifest.spec);
   // Chapters must always describe the displayed render, including a stale one.
   const timeline = rendered.success ? rendered.data : undefined;
+  const scripted = timeline?.scenes.filter(scene => scene.narration) ?? [];
+  const unrecorded = scripted.filter(scene => !scene.narration?.audio);
+  const narration = !present || !timeline ? 'Unavailable: no rendered timeline is available.'
+    : !scripted.length ? 'No scripted narration in the rendered timeline.'
+    : `${scripted.length - unrecorded.length} of ${scripted.length} scripted scenes have attached narration.` +
+      (unrecorded.length ? ` Scripts awaiting recording (silent): ${unrecorded.map(scene => scene.id).join(', ')}.` : '');
   let start = 0;
   const chapters = timeline?.scenes.map(scene => {
     const at = start;
@@ -59,6 +65,7 @@ ${present ? '<video id="video" controls preload="metadata" src="video.mp4"></vid
 <p>Rendered input identity: <code>${escape(manifest.identity ?? 'unknown')}</code></p>
 <p>Current input identity: <code>${escape(identity ?? 'unavailable')}</code></p>
 <p>Automated checks: file presence and input/output identity only. Human listening and approval are not inferred.</p>
+<h2>Rendered narration</h2><p>${escape(narration)}</p>
 <h2>Review note</h2><p class="note">${escape(note || 'No human review status supplied.')}</p>
 ${sheet ? '<p><a href="contact-sheet.png">Existing contact sheet</a> — its revision is not verified.</p>' : '<p>No contact sheet available.</p>'}
 <script>const video=document.getElementById('video');document.querySelectorAll('button[data-time]').forEach(button=>button.addEventListener('click',()=>{video.currentTime=Number(button.dataset.time);video.play();}));</script></html>`;
