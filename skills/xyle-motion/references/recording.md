@@ -10,7 +10,8 @@ npm exec -- explainer narrate videos/first-video --scene intro --voice voiceId
 ```
 
 Require `ELEVENLABS_API_KEY` in the process environment using the existing secret
-setup. A voice is required through `--voice` or `ELEVENLABS_VOICE_ID`.
+setup, with text-to-speech permission. Model listing permission is not required
+for `narrate`. A voice is required through `--voice` or `ELEVENLABS_VOICE_ID`.
 The key is required even when `narrate` can reuse a cached output.
 `--model modelId` overrides `eleven_v4`, the default from the
 [official quickstart](https://elevenlabs.io/docs/eleven-api/quickstart/).
