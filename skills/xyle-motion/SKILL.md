@@ -37,7 +37,7 @@ Existing external recordings/music paths remain video-relative.
 
 Keep original narration and processing in the user's project. For phone
 recording, use the paired Xyle Recorder workflow in
-[Voice Studio](../../studio/README.md): send the approved script and separate
+[the recording guide](references/recording.md): send the approved script and separate
 speaking instructions, then import explicitly submitted takes through the
 configured private API. WarayWaray operates the first backend; this skill
 never runs or deploys it. Do not provision credentials or send tasks unless the
