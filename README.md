@@ -1,4 +1,4 @@
-# Xyle Motion
+<h1><picture><source media="(prefers-color-scheme: dark)" srcset="library/identity/xyle-motion-logo-dark.svg"><img src="library/identity/xyle-motion-logo.svg" alt="Xyle Motion" width="460"></picture></h1>
 
 Create editable explainer videos inside the project that owns the knowledge,
 brand and artwork. One npm package, one coding-agent skill, no MCP server.
