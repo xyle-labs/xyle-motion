@@ -226,7 +226,7 @@ export async function startRecordingStudio(directory: string, port = 4318, confi
           res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer', 'Content-Security-Policy': "default-src 'self'; connect-src 'self'; media-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-ancestors 'none'; base-uri 'none'; form-action 'none'" });
           return res.end(readFileSync(join(web, 'index.html'), 'utf8').replace('__TOKEN__', token));
         }
-        const files: Record<string, string> = { '/studio.js': 'text/javascript', '/studio.css': 'text/css' };
+        const files: Record<string, string> = { '/studio.js': 'text/javascript', '/studio.css': 'text/css', '/favicon.svg': 'image/svg+xml' };
         if (files[url.pathname]) return serveFile(res, join(web, url.pathname.slice(1)), files[url.pathname]);
         return send(404, { error: 'Not found' });
       }

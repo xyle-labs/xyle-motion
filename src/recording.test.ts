@@ -155,6 +155,10 @@ test('studio preserves originals, previews separately, applies safely, and survi
   const { server, url } = await startRecordingStudio(directory, 0);
   try {
     const html = await (await fetch(url)).text();
+    const favicon = await fetch(url + '/favicon.svg');
+    assert.equal(favicon.status, 200);
+    assert.match(favicon.headers.get('content-type') ?? '', /image\/svg\+xml/);
+    assert.match(await favicon.text(), /data-brand="xyle-crosspoint"/);
     const token = /name="studio-token" content="([^"]+)"/.exec(html)![1];
     const post = async (route: string, data: unknown, overrides = {}) => {
       const response = await fetch(url + route, { method: 'POST', headers: { 'X-Studio-Token': token, 'Content-Type': 'application/json', ...overrides }, body: Buffer.isBuffer(data) ? data : JSON.stringify(data) });
