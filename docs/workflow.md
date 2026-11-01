@@ -54,15 +54,24 @@ directory whose parent already exists:
 node scripts/demo.mjs /project/node_modules/@xyle-labs/motion /tmp/motion-walkthrough
 ```
 
-The script requires full FFmpeg. It runs `demo`, `assets`, `inspect`, `validate`,
-`frame`, `render`, `contact-sheet` and `review`, edits the first title, verifies
-cache reuse and current review status, then renders five illustrated steps with
-Motion itself and appends the real six-second export. Outputs are `workflow.gif`
-and `workflow.mp4`; intermediate sources and evidence stay in the external
-directory. Existing output directories are refused. The GIF is silent; the MP4
-includes the example's music/effects. No speech is generated.
+The script requires full FFmpeg. It renders three chapters: installation, active
+use with an agent, and outputs/benefits. Large text, one action per screen and
+8–12 second holds leave time to read; the MP4 can be paused and scrubbed. The
+agent prompts illustrate requests. The script verifies the corresponding edit
+through the installed CLI, rather than claiming a live agent session.
 
-Review composition, motion and metadata before copying the GIF to
-`docs/media/workflow.gif` and updating its checksum. The documentation media
-exception accepts only that exact path and reviewed bytes. Run the installed
+It copies the complete skill folder, runs `demo`, `assets`, `inspect`, `validate`,
+`frame`, `render`, `contact-sheet` and `review`, preserves the second scene,
+checks one-scene cache invalidation and unchanged-scene reuse, and verifies
+review freshness. Motion renders the tutorial itself; the real six-second
+example follows it. Outputs are `workflow.gif` and `workflow.mp4`; intermediate
+sources and evidence stay in the external directory. Both delivery formats are
+silent, including the appended example. No speech is generated. Existing
+output directories are refused. Add `--prepare` to generate only the first
+installation frame before producing the full tutorial.
+
+Review composition, motion and metadata before copying the GIF and MP4 to
+`docs/media/` and updating their checksums. The documentation media exception
+accepts only those two exact paths and reviewed bytes. Retain approved earlier
+tutorial hashes so the full-history scan still verifies those commits. Run the installed
 tarball smoke test after changing the packaged CLI or documentation.

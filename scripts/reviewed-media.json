@@ -17,5 +17,9 @@
   "library/sounds/thunk.wav": "8266cfbc273be3f5ef9500f3665c790df5944dadb5edd7718248b037e6332ef7",
   "library/sounds/whoosh.wav": "3666f8367d6d22d7542fcde232847d0784fc335561776b66d5d217e920201013",
   "library/sounds/wood-tap.wav": "a497fba78d9bde4fa6e56b293d67568f04d195f6c0ffd48fe3c730e9536829eb",
-  "docs/media/workflow.gif": "46476dbfd44891e04c29a0f86ce56cd4e1a782c6e142938840dc245b2a4adeab"
+  "docs/media/workflow.gif": [
+    "46476dbfd44891e04c29a0f86ce56cd4e1a782c6e142938840dc245b2a4adeab",
+    "88272c6897aa05e77b171d2ba2bd1949e07aeb2c191aa8ec41ea3648f7503861"
+  ],
+  "docs/media/workflow.mp4": "c70378d76ba85883b8fc3d05d38c4f0e5f20fadea757d1272f46c8244e28526f"
 }

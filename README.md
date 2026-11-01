@@ -7,7 +7,10 @@ The agent writes `video.yaml`; the shared renderer produces the video.
 [![Checks](https://github.com/xyle-labs/xyle-motion/actions/workflows/security.yml/badge.svg)](https://github.com/xyle-labs/xyle-motion/actions/workflows/security.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-126e70.svg)](LICENSE)
 
-![Create a demo, inspect a scene, edit YAML, reuse cached renders and open a review bundle.](docs/media/workflow.gif)
+[Watch the tutorial with pause/seek](docs/media/workflow.mp4) ·
+[Follow the written steps](docs/quickstart.md)
+
+![Three chapters: install Motion and its skill, use it with an agent, then get an MP4, editable scenes and reusable renders.](docs/media/workflow.gif)
 
 [First video](docs/quickstart.md) · [Workflow and GIF source](docs/workflow.md) ·
 [Scene reference](skills/xyle-motion/references/toolkit.md) · [Roadmap](ROADMAP.md)
@@ -33,6 +36,7 @@ In this repository:
 
 ```sh
 npm ci
+npm run security:setup
 npm pack
 ```
 

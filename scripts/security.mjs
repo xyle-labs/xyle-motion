@@ -25,8 +25,12 @@ export function checkEntry(path, mode, bytes, reviewed) {
     return;
   }
   if (!['100644', '100755'].includes(mode)) throw new Error('Submodules and special file modes require review.');
-  if (path.endsWith('.wav') || path === 'docs/media/workflow.gif') {
-    if (reviewed[path] !== sha256(bytes)) throw new Error(`Unreviewed media: ${JSON.stringify(path)}. Review provenance and content before updating the manifest.`);
+  const tutorial = ['docs/media/workflow.gif', 'docs/media/workflow.mp4'].includes(path);
+  if (path.endsWith('.wav') || tutorial) {
+    // Retain explicitly reviewed tutorial versions so the history scan can
+    // check older commits after a replacement. Each version still needs a hash.
+    const hashes = tutorial && Array.isArray(reviewed[path]) ? reviewed[path] : [reviewed[path]];
+    if (!hashes.includes(sha256(bytes))) throw new Error(`Unreviewed media: ${JSON.stringify(path)}. Review provenance and content before updating the manifest.`);
   } else if (bytes.includes(0) || !Buffer.from(bytes.toString('utf8')).equals(bytes) || bytes.length > 1024 * 1024) {
     throw new Error(`Binary or oversized file requires review: ${JSON.stringify(path)}`);
   }

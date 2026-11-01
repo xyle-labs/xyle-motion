@@ -69,6 +69,9 @@ directory without overwriting existing work; `--version` identifies the installe
 build. A [quickstart](quickstart.md), [workflow guide](workflow.md),
 [roadmap](../ROADMAP.md) and issue forms make the using/contributing paths explicit.
 The README walkthrough is regenerated from real installed CLI commands and a
-synthetic YAML edit, using the shared renderer. Its GIF has no narration, and
-the appended result uses the existing bundled music and effects. This does not
+synthetic YAML edit, using the shared renderer. Three chapters explain
+installation, active use with an agent, and outputs/benefits. The pauseable MP4
+and GIF are silent throughout; the final six seconds show the actual export.
+Targeted context, shared code/art and scene-cache reuse are explained without
+claiming measured token savings. This does not
 complete the client pilot or release approval above.

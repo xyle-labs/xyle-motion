@@ -39,10 +39,13 @@ These approved details in retained older commits do not require further removal.
 Confidential client content, credentials and assistant sessions remain excluded.
 Source symlinks are limited to the two shared skill links. Unreviewed binary or
 oversized files are rejected. Existing generated WAV files and the exact
-`docs/media/workflow.gif` documentation demo are pinned by SHA-256
-in `scripts/reviewed-media.json`; inspect provenance, metadata and content before
-intentionally changing that manifest. Public upstream author/license attribution
-is retained and is not private contributor information.
+`docs/media/workflow.gif` and `docs/media/workflow.mp4` tutorial files are pinned
+by SHA-256 in `scripts/reviewed-media.json`; inspect provenance, metadata and
+content before intentionally changing that manifest. Tutorial entries may list
+multiple explicitly reviewed hashes so the history scan also verifies earlier
+committed versions. This does not allow other paths or unreviewed replacement
+bytes. Public upstream author/license attribution is retained and is not private
+contributor information.
 
 CI runs the same full-history check on pushes and pull requests. Main requires
 a pull request, the up-to-date `security` check from GitHub Actions, resolved
