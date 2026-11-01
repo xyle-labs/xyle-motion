@@ -46,6 +46,7 @@
     "skills/xyle-motion/scripts/context.mjs",
     "examples/minimal/video.yaml",
     "docs/",
+    "ROADMAP.md",
     "NOTICE.md",
     "SECURITY.md",
     "CONTRIBUTING.md",

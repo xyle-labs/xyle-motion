@@ -9,7 +9,7 @@ an explicitly selected browser or dump environment variables.
 First reproduce with the bundled synthetic example, outside the installed package:
 
 ```sh
-cp -R node_modules/@xyle-labs/motion/examples/minimal /tmp/motion-browser-check
+npm exec -- explainer demo /tmp/motion-browser-check
 npm exec -- explainer validate /tmp/motion-browser-check
 npm exec -- explainer frame /tmp/motion-browser-check --scene idea --time 1.5
 ```

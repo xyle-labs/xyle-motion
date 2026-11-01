@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // Research and story documents stay skill-authored; the CLI handles video operations.
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
-import { basename, join, relative, resolve } from 'node:path';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { basename, dirname, join, relative, resolve } from 'node:path';
 import { remotionArgs as renderArgs, remotionCwd, runRemotion } from '../src/remotion.ts';
 import { PACKAGE_ROOT } from '../src/paths.ts';
 import { parseArgs } from 'node:util';
@@ -24,6 +24,7 @@ import { createReview, renderIdentity, saveRenderManifest } from '../src/review.
 
 const USAGE = `usage:
   explainer new           <video-directory>
+  explainer demo          <video-directory>              six-second editable example
   explainer inspect       <video-directory> [--scene id]
   explainer validate      <video-directory>
   explainer assets        <video-directory>              library contents, * = used here
@@ -39,7 +40,8 @@ const USAGE = `usage:
   explainer render        <video-directory> [--scene id]  unchanged scenes are reused
 
 --config path selects explainer.yaml; otherwise the video directory and its parent are searched.
---help, -h prints this help. --scene times are relative to the selected scene.
+--help, -h prints this help. --version prints the installed package version.
+--scene times are relative to the selected scene.
 narrate requires ELEVENLABS_API_KEY and --voice or ELEVENLABS_VOICE_ID; the default model is eleven_v4.
 preview and render --scene omit the music bed; use mix for scene audio review.`;
 
@@ -48,6 +50,7 @@ function argumentsFromCli() {
   allowPositionals: true,
   options: {
     help: { type: 'boolean', short: 'h' },
+    version: { type: 'boolean' },
     scene: { type: 'string' },
     time: { type: 'string' },
     frames: { type: 'string' },
@@ -62,13 +65,28 @@ function argumentsFromCli() {
 }
 const { values, positionals } = argumentsFromCli();
 if (values.help) { console.log(USAGE); process.exit(0); }
+if (values.version) {
+  console.log(JSON.parse(readFileSync(join(PACKAGE_ROOT, 'package.json'), 'utf8')).version);
+  process.exit(0);
+}
 const [command, target] = positionals;
 const project = target ? basename(resolve(target)) : '';
 if (!command || !target) die(USAGE);
-if (!['new', 'inspect', 'validate', 'assets', 'enhance', 'import', 'narrate', 'mix', 'review', 'record', 'preview', 'frame', 'contact-sheet', 'render'].includes(command)) die(USAGE);
+if (!['new', 'demo', 'inspect', 'validate', 'assets', 'enhance', 'import', 'narrate', 'mix', 'review', 'record', 'preview', 'frame', 'contact-sheet', 'render'].includes(command)) die(USAGE);
 
 const dir = resolve(target);
 const outDir = join(dir, 'output');
+if (command === 'demo') {
+  // The bundled example is fixed; project defaults apply only to `new`.
+  if (values.config || values.scene) die('demo uses the bundled example; use new for configured defaults');
+  if (existsSync(dir)) die(`${dir} already exists`);
+  mkdirSync(dirname(dir), { recursive: true });
+  mkdirSync(dir); // Exclusive creation also refuses concurrent writes or a dangling symlink.
+  copyFileSync(join(PACKAGE_ROOT, 'examples/minimal/video.yaml'), join(dir, 'video.yaml'));
+  writeFileSync(join(dir, 'brief.md'), `# Demo\n\nSix seconds, two scenes, bundled artwork, music and effects.\nEdit the title in scene idea, then validate and render again.\nThe together narration script has no take and stays silent.\n\nProduction status: synthetic example; playback/listening review pending.\n`);
+  console.log(`created editable demo at ${dir}\nnext: explainer validate ${JSON.stringify(dir)}\nthen: explainer render ${JSON.stringify(dir)}`);
+  process.exit(0);
+}
 let config: ProjectConfig;
 try { config = loadConfig(dir, values.config); }
 catch (error) { die((error as Error).message); }

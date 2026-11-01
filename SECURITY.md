@@ -38,8 +38,9 @@ Project and studio references, including Waray and Fallen Coconut, are acceptabl
 These approved details in retained older commits do not require further removal.
 Confidential client content, credentials and assistant sessions remain excluded.
 Source symlinks are limited to the two shared skill links. Unreviewed binary or
-oversized files are rejected. Existing generated WAV files are pinned by SHA-256
-in `scripts/reviewed-media.json`; inspect provenance, metadata and audio before
+oversized files are rejected. Existing generated WAV files and the exact
+`docs/media/workflow.gif` documentation demo are pinned by SHA-256
+in `scripts/reviewed-media.json`; inspect provenance, metadata and content before
 intentionally changing that manifest. Public upstream author/license attribution
 is retained and is not private contributor information.
 

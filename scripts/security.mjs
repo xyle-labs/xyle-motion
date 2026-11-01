@@ -25,8 +25,8 @@ export function checkEntry(path, mode, bytes, reviewed) {
     return;
   }
   if (!['100644', '100755'].includes(mode)) throw new Error('Submodules and special file modes require review.');
-  if (path.endsWith('.wav')) {
-    if (reviewed[path] !== sha256(bytes)) throw new Error(`Unreviewed media: ${JSON.stringify(path)}. Review provenance and audio before updating the manifest.`);
+  if (path.endsWith('.wav') || path === 'docs/media/workflow.gif') {
+    if (reviewed[path] !== sha256(bytes)) throw new Error(`Unreviewed media: ${JSON.stringify(path)}. Review provenance and content before updating the manifest.`);
   } else if (bytes.includes(0) || !Buffer.from(bytes.toString('utf8')).equals(bytes) || bytes.length > 1024 * 1024) {
     throw new Error(`Binary or oversized file requires review: ${JSON.stringify(path)}`);
   }

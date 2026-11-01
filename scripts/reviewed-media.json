@@ -16,5 +16,6 @@
   "library/sounds/sparkle.wav": "b299590bddb8169e9db994859892a4fec61556697d6ad677dfef5bdb834068df",
   "library/sounds/thunk.wav": "8266cfbc273be3f5ef9500f3665c790df5944dadb5edd7718248b037e6332ef7",
   "library/sounds/whoosh.wav": "3666f8367d6d22d7542fcde232847d0784fc335561776b66d5d217e920201013",
-  "library/sounds/wood-tap.wav": "a497fba78d9bde4fa6e56b293d67568f04d195f6c0ffd48fe3c730e9536829eb"
+  "library/sounds/wood-tap.wav": "a497fba78d9bde4fa6e56b293d67568f04d195f6c0ffd48fe3c730e9536829eb",
+  "docs/media/workflow.gif": "46476dbfd44891e04c29a0f86ce56cd4e1a782c6e142938840dc245b2a4adeab"
 }

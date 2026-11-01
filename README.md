@@ -4,6 +4,19 @@ Create editable explainer videos inside the project that owns the knowledge,
 brand and artwork. One npm package, one coding-agent skill, no MCP server.
 The agent writes `video.yaml`; the shared renderer produces the video.
 
+[![Checks](https://github.com/xyle-labs/xyle-motion/actions/workflows/security.yml/badge.svg)](https://github.com/xyle-labs/xyle-motion/actions/workflows/security.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-126e70.svg)](LICENSE)
+
+![Create a demo, inspect a scene, edit YAML, reuse cached renders and open a review bundle.](docs/media/workflow.gif)
+
+[First video](docs/quickstart.md) · [Workflow and GIF source](docs/workflow.md) ·
+[Scene reference](skills/xyle-motion/references/toolkit.md) · [Roadmap](ROADMAP.md)
+
+Write a story with an agent, reuse artwork and sound, inspect real frames, then
+share a local review bundle. Videos stay editable as ordinary project files.
+Unchanged scenes are cached across renders. Recording, import, cleanup and
+rendering run locally; optional generated narration uses ElevenLabs.
+
 **Public development preview:** Xyle Motion's original code and assets use the
 [MIT license](LICENSE). Dependencies and the bundled RNNoise model retain their
 own terms; see [NOTICE.md](NOTICE.md), especially Remotion's separate company
@@ -27,7 +40,7 @@ In your own project, install the generated `.tgz` file by its actual path:
 
 ```sh
 npm install --save-dev --save-exact /path/to/xyle-labs-motion-0.1.0-dev.0.tgz
-npm exec -- explainer new videos/first-video
+npm exec -- explainer demo videos/first-video
 npm exec -- explainer inspect videos/first-video
 npm exec -- explainer validate videos/first-video
 npm exec -- explainer frame videos/first-video --time 1
@@ -36,7 +49,13 @@ npm exec -- explainer render videos/first-video
 
 The video directory owns its `video.yaml`, `recordings/` and `output/`. Ignore
 `**/output/` and generated recording previews in the host repository. Back up
-original recordings. An existing directory is never overwritten by `new`.
+original recordings. `demo` creates the fixed six-second example; `new` creates
+a blank starter using project defaults. Both refuse an existing destination.
+Follow [your first editable video](docs/quickstart.md) to make a change, see
+scene-cache reuse and open a review bundle. `explainer --version` identifies
+the installed build.
+
+## Shared project resources
 
 Optional shared resources live in `explainer.yaml` in the video directory or
 its immediate parent. Use `--config /path/to/explainer.yaml` for another layout.
@@ -66,9 +85,8 @@ the skill to read selectively; the renderer never reads their contents.
 change that video's copied settings. Video-relative artwork, narration and
 explicit music paths retain their existing resolution.
 
-A six-second, two-scene example is included in `examples/minimal/video.yaml`.
-Copy its folder into your project to audition the reusable artwork, effects and
-continuous music bed. Its narration script is deliberately unrecorded.
+The bundled example uses reusable artwork, effects and a continuous music bed.
+Its narration script is deliberately unrecorded.
 
 ## Use the skill
 
@@ -86,7 +104,7 @@ production narration requires ElevenLabs credentials as described below.
 
 ## Commands
 
-`new`, `inspect`, `assets`, `validate`, `preview`, `frame`, `contact-sheet`,
+`new`, `demo`, `inspect`, `assets`, `validate`, `preview`, `frame`, `contact-sheet`,
 `narrate`, `record`, `enhance`, `import`, `mix`, `review`, and `render` all accept
 an explicit video directory.
 Use `--scene <id>` for isolated changes and `--time <seconds>` for a frame.

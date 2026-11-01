@@ -1,4 +1,4 @@
-# Development status — 24 October 2026
+# Development status — 1 November 2026
 
 Xyle Motion is a public development preview: one `@xyle-labs/motion` package,
 the `explainer` CLI and the `$xyle-motion` skill. `package.json` remains
@@ -61,3 +61,14 @@ engine validation; it is not a finished brand kit.
 
 The [implementation plan](portable-toolkit-plan.md) gives the milestone acceptance
 details. GitHub issues track the remaining execution work.
+
+## Onboarding improvements prepared for review
+
+The `demo` command creates the bundled six-second example in an external video
+directory without overwriting existing work; `--version` identifies the installed
+build. A [quickstart](quickstart.md), [workflow guide](workflow.md),
+[roadmap](../ROADMAP.md) and issue forms make the using/contributing paths explicit.
+The README walkthrough is regenerated from real installed CLI commands and a
+synthetic YAML edit, using the shared renderer. Its GIF has no narration, and
+the appended result uses the existing bundled music and effects. This does not
+complete the client pilot or release approval above.
