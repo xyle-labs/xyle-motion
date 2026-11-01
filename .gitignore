@@ -84,6 +84,7 @@ output/
 *.jpeg
 *.webp
 *.mp4
+!/docs/media/workflow.mp4
 *.mov
 *.webm
 *.m4a

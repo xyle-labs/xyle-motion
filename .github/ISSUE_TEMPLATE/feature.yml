@@ -1,0 +1,17 @@
+name: Feature request
+description: Describe an outcome that the current workflow cannot achieve.
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: Describe the video task, the blocked step and the current workaround. Use public or synthetic examples.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: What would success look like?
+      description: Give one concrete before/after example. Link related roadmap items or issues if relevant.
+    validations:
+      required: true

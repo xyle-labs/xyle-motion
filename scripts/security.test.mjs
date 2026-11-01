@@ -25,6 +25,22 @@ test('privacy guard rejects unapproved identities, arbitrary binaries, changed m
   const reviewed = { [path]: createHash('sha256').update(bytes).digest('hex') };
   checkEntry(path, '100644', bytes, reviewed);
   assert.throws(() => checkEntry(path, '100644', Buffer.from([0, 1, 3]), reviewed), /Unreviewed media/);
+  const demo = 'docs/media/workflow.gif';
+  const media = { [demo]: createHash('sha256').update(bytes).digest('hex') };
+  checkEntry(demo, '100644', bytes, media);
+  assert.throws(() => checkEntry(demo, '100644', Buffer.from([0, 1, 3]), media), /Unreviewed media/);
+  assert.throws(() => checkEntry(demo, '100644', bytes, {}), /Unreviewed media/);
+  assert.throws(() => checkEntry('docs/media/other.gif', '100644', bytes, media), /Binary/);
+  const replacement = Buffer.from([0, 1, 3]);
+  const versions = { [demo]: [media[demo], createHash('sha256').update(replacement).digest('hex')] };
+  checkEntry(demo, '100644', bytes, versions);
+  checkEntry(demo, '100644', replacement, versions);
+  assert.throws(() => checkEntry(demo, '100644', Buffer.from([0, 1, 4]), versions), /Unreviewed media/);
+  const movie = 'docs/media/workflow.mp4';
+  checkEntry(movie, '100644', bytes, { [movie]: media[demo] });
+  assert.throws(() => checkEntry(movie, '100644', bytes, {}), /Unreviewed media/);
+  assert.throws(() => checkEntry('docs/media/other.mp4', '100644', bytes, { 'docs/media/other.mp4': media[demo] }), /Binary/);
+  assert.throws(() => checkEntry(path, '100644', bytes, { [path]: [reviewed[path]] }), /Unreviewed media/);
   assert.throws(() => checkEntry('source.txt', '100644', bytes, {}), /Binary/);
   assert.throws(() => checkEntry('source.txt', '100644', Buffer.alloc(1024 * 1024 + 1, 65), {}), /oversized/);
   assert.throws(() => checkEntry('source.txt', '160000', Buffer.from('submodule'), {}), /Submodules/);
@@ -44,7 +60,9 @@ test('privacy guard rejects unapproved identities, arbitrary binaries, changed m
 });
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const scanner = join(root, '.git/security-tools/gitleaks');
+const gitPath = spawnSync('git', ['rev-parse', '--git-path', 'security-tools/gitleaks'], { cwd: root, encoding: 'utf8' });
+assert.equal(gitPath.status, 0, gitPath.stderr);
+const scanner = resolve(root, gitPath.stdout.trim());
 test('real hooks block forced artifacts, staged secrets, messages and history', {
   skip: !existsSync(scanner) && 'Run npm run security:setup to exercise Gitleaks integration',
 }, () => {

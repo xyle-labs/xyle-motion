@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, writeFileSync, cpSync } from 'node:fs';
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { createRequire } from 'node:module';
@@ -38,8 +38,14 @@ const fingerprint = (directory) => {
 const before = fingerprint(pkg);
 const video = join(cwd, 'videos', 'demo');
 mkdirSync(join(cwd, 'videos'));
-cpSync(join(pkg, 'examples/minimal'), video, { recursive: true });
 const call = (...args) => run(process.execPath, [cli, ...args]);
+assert.equal(call('--version').trim(), JSON.parse(readFileSync(join(pkg, 'package.json'), 'utf8')).version);
+call('demo', video);
+const demoSource = readFileSync(join(video, 'video.yaml'));
+const existingDemo = spawnSync(process.execPath, [cli, 'demo', video], { cwd, env, encoding: 'utf8' });
+assert.equal(existingDemo.status, 1);
+assert.match(existingDemo.stderr, /already exists/);
+assert.deepEqual(readFileSync(join(video, 'video.yaml')), demoSource);
 assert.match(call('--help'), /usage:/);
 assert.match(call('--help'), /narrate/);
 assert.match(call('-h'), /decode only/);

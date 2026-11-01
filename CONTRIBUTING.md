@@ -22,6 +22,10 @@ Project names and public upstream attribution are acceptable. New media needs
 provenance and content review before its checksum is added to the media manifest.
 
 Open a pull request against main explaining the change and how you tested it.
+Use the bug report or feature request form for a synthetic reproduction or
+concrete workflow gap. The [quickstart](docs/quickstart.md) covers using the
+installed package; [the workflow guide](docs/workflow.md#rebuild-the-walkthrough)
+documents how to regenerate the README demo.
 Main requires passing CI, an up-to-date branch and resolved review conversations.
 Squash merges keep its history linear; direct pushes, force-pushes and deletion
 are blocked. There is currently one maintainer, so no second approval is required.
